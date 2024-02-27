@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region                      = "us-east-1"
   access_key                  = "test"
   secret_key                  = "test"
   skip_credentials_validation = true
@@ -31,4 +31,8 @@ provider "aws" {
     stepfunctions  = "http://localhost:4566"
     sts            = "http://localhost:4566"
   }
+}
+
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "my-test-bucket"
 }
