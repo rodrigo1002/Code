@@ -1,0 +1,6 @@
+MySNSTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    Subscription:
+    - Endpoint: "rodrigo1002@hotmail.com"
+      Protocol: email

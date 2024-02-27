@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'AWS CloudFormation Sample Template WordPress_Single_Instance: WordPress
+  is web software you can use to create a beautiful website or blog. This template
+  installs WordPress with a local MySQL database for storage. It demonstrates using
+  the AWS CloudFormation bootstrap scripts to deploy WordPress. **WARNING** This template
+  creates an Amazon EC2 instance. You will be billed for the AWS resources used if
+  you create a stack from this template.'
+
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t1.micro
+      - t2.nano
+      - t2.micro
+    ConstraintDescription: must be a valid EC2 instance type.
+  DBName:
+    Default: wordpressdb
+    Description: The WordPress database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBUser:
+    NoEcho: 'true'
+    Description: The WordPress database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The WordPress database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  DBRootPassword:
+    NoEcho: 'true'
+    Description: MySQL root password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  VPCCIDR:
+    Description: CIDR Block for VPC
+    Type: String
+    Default: 10.1.0.0/16
+    AllowedValues:
+      - 10.1.0.0/16
+  PublicSubnet1Param:
+    Description: Public Subnet 1
+    Type: String
+    Default: 10.1.11.0/24
+    AllowedValues:
+      - 10.1.11.0/24
+  PublicSubnet2Param:
+    Description: Public Subnet 2
+    Type: String
+    Default: 10.1.12.0/24
+    AllowedValues:
+      - 10.1.12.0/24
+Resources:
+  WebServerSecurityGroup:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access via port 80 locked down to the load balancer
+      VpcId: !Ref 'VPC'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref 'VPCCIDR'
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: Lab VPC
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: VPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn:
+      - VPC
+      - InternetGateway
+    Properties:
+      VpcId: !Ref 'VPC'
+      InternetGatewayId: !Ref 'InternetGateway'
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref 'VPC'
+      CidrBlock: !Ref 'PublicSubnet1Param'
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: Public Subnet 1
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref 'VPC'
+      CidrBlock: !Ref 'PublicSubnet2Param'
+      AvailabilityZone: !Select
+        - '1'
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: Public Subnet 2
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    DependsOn:
+      - VPC
+      - AttachGateway
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags:
+        - Key: Name
+          Value: Public
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - PublicRouteTable
+      - AttachGateway
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref 'InternetGateway'
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+      - PublicRouteTable
+      - PublicSubnet1
+      - AttachGateway
+    Properties:
+      SubnetId: !Ref 'PublicSubnet1'
+      RouteTableId: !Ref 'PublicRouteTable'
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+      - PublicRouteTable
+      - PublicSubnet2
+    Properties:
+      SubnetId: !Ref 'PublicSubnet2'
+      RouteTableId: !Ref 'PublicRouteTable'
+  
+  WebServer:
+    Type: AWS::EC2::Instance
+    DependsOn: WebServerSecurityGroup
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - install-cfn
+            - install-tools
+            - install-web-server
+            - enable-tls
+            - install-wordpress
+            - configure-wordpress
+        
+        install-cfn:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.WebServer.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v          --stack ${AWS::StackName}         --resource WebServer          --configsets wordpress_install          --region ${AWS::Region}
+              mode: '000400'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+
+        install-tools:
+          commands:
+            a-update-yum:
+              command: yum update -y
+            b-install-python3:
+              command: yum install -y python3
+            c-remove-aws-cli-v1:
+              command: rm -rf /usr/bin/aws
+            d-download-aws-cli-v2:
+              command: curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            e-unzip-package:
+              command: unzip awscliv2.zip
+            f-install-aws-cli-v2:
+              command: ./aws/install -b
+
+        install-web-server:  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-lamp-amazon-linux-2.html
+          commands:
+            a-amazon-linux-extras:
+              command: amazon-linux-extras install php7.4
+            b-install-apache:
+              command: yum install -y httpd
+            c-start-apache:
+              command: systemctl start httpd.service
+            d-start-apache-at-boot:
+              command: systemctl enable httpd
+            e-install-mariadb:
+              command: yum install -y mariadb-server
+            f-start-mariadb:
+              command: systemctl start mariadb.service
+            g-start-mariadb-at-boot:
+              command: systemctl enable mariadb.service
+            h-install-php:
+              command: yum install -y php
+            i-start-php:
+              command: systemctl start php-fpm.service
+            j-start-php-at-boot:
+              command: systemctl enable php-fpm
+            k-add-user-to-apache-group:
+              command: usermod -a -G apache ec2-user
+            l-change-www-directory-ownership:
+              command: chown -R ec2-user:apache /var/www
+            m-add-group-write-permissions:
+              command: chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
+            n-add-group-permissions-recursively:
+              command: find /var/www -type f -exec sudo chmod 0664 {} \;
+
+        enable-tls: # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SSL-on-amazon-linux-2.html#ssl_enable
+          commands:
+            a-install-mod-ssl:
+              command: yum install -y mod_ssl
+            b-generate-cert:
+              command: /etc/pki/tls/certs/make-dummy-cert /etc/pki/tls/certs/localhost.crt
+            c-modify-ssl-conf-file:
+              command: sed -i 's/SSLCertificateKeyFile/#SSLCertificateKeyFile/' /etc/httpd/conf.d/ssl.conf
+            d-restart-httpd-service:
+              command: systemctl restart httpd
+
+        install-wordpress: # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hosting-wordpress.html
+          sources:
+            /var/www/html: http://wordpress.org/latest.tar.gz
+          files:
+            /tmp/setup.mysql:
+              content: !Sub |
+                CREATE DATABASE ${DBName};
+                CREATE USER '${DBUser}'@'localhost' IDENTIFIED BY '${DBPassword}';
+                GRANT ALL ON ${DBName}.* TO '${DBUser}'@'localhost';
+                FLUSH PRIVILEGES;
+              mode: '000400'
+              owner: root
+              group: root
+            /tmp/create-wp-config:
+              content: !Sub |
+                #!/bin/bash -xe
+                cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
+                sed -i "s/'database_name_here'/'${DBName}'/g" wp-config.php
+                sed -i "s/'username_here'/'${DBUser}'/g" wp-config.php
+                sed -i "s/'password_here'/'${DBPassword}'/g" wp-config.php
+              mode: '000500'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+
+        configure-wordpress:
+          commands:
+            01_set_mysql_root_password:
+              command: !Sub 'mysqladmin -u root password ''${DBRootPassword}'''
+              test: !Sub '$(mysql ${DBName} -u root --password=''${DBRootPassword}''
+                >/dev/null 2>&1 </dev/null); (( $? != 0 ))'
+            02_create_database:
+              command: !Sub 'mysql -u root --password=''${DBRootPassword}'' < /tmp/setup.mysql'
+              test: !Sub '$(mysql ${DBName} -u root --password=''${DBRootPassword}''
+                >/dev/null 2>&1 </dev/null); (( $? != 0 ))'
+            03_configure_wordpress:
+              command: /tmp/create-wp-config
+              cwd: /var/www/html/wordpress
+
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref 'InstanceType'
+      IamInstanceProfile: !ImportValue cfn-workshop-WebServerProfile
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          AssociatePublicIpAddress: 'true'
+          SubnetId: !Ref 'PublicSubnet2'
+          GroupSet:
+            - !Ref 'WebServerSecurityGroup'
+
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            yum update -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebServer --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebServer --region ${AWS::Region}
+
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+
+Outputs:
+  WebsiteURL:
+    Value: !Sub 'http://${WebServer.PublicDnsName}/wordpress'
+    Description: WordPress Website
+    
+  InstanceSessionURL:
+    Description: AWS Systems Manager Session Manager (SSM) terminal connection to the Web Server EC2 instance
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/systems-manager/session-manager/${WebServer}
