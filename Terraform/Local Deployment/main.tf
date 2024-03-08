@@ -9,8 +9,8 @@ terraform {
 
 provider "hyperv" {
   # Username and password for connecting to Hyper-V
-  user     = "" # Update with your username
-  password = "" # Update with your password
+  user     = "Administrator" # Update with your username
+  password = "RM" # Update with your password
 
   # Host and port for connecting to Hyper-V
   host = "Ryan-PC" # Hyper-V host, use localhost if running on the same machine
@@ -55,7 +55,7 @@ resource "hyperv_vhd" "webserver" {
 }
 
 resource "hyperv_machine_instance" "default" {
-  name                                    = "WebServer"
+  name                                    = "RM-WebServer"
   generation                              = 2
   automatic_critical_error_action         = "Pause"
   automatic_critical_error_action_timeout = 30
@@ -64,12 +64,12 @@ resource "hyperv_machine_instance" "default" {
   automatic_stop_action                   = "Save"
   checkpoint_type                         = "Production"
   guest_controlled_cache_types            = false
-  high_memory_mapped_io_space             = 536870912
+  high_memory_mapped_io_space             = 2147483648  # 2048 MB in bytes
   lock_on_disconnect                      = "Off"
-  low_memory_mapped_io_space              = 134217728
-  memory_maximum_bytes                    = 1099511627776
-  memory_minimum_bytes                    = 536870912
-  memory_startup_bytes                    = 536870912
+  low_memory_mapped_io_space              = 2147483648
+  memory_maximum_bytes                    = 2147483648  # 2048 MB in bytes
+  memory_minimum_bytes                    = 2147483648
+  memory_startup_bytes                    = 2147483648
   notes                                   = ""
   processor_count                         = 1
   smart_paging_file_path                  = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\Hyper-V"
@@ -85,6 +85,12 @@ resource "hyperv_machine_instance" "default" {
     preferred_network_boot_protocol = "IPv4"
     console_mode                    = "None"
     pause_after_boot_failure        = "Off"
+    
+    boot_order {
+    boot_type             = "DvdDrive"
+    controller_number     = "0"
+    controller_location   = "1"
+  }
     boot_order {
       boot_type           = "HardDiskDrive"
       controller_number   = "0"
@@ -164,9 +170,8 @@ resource "hyperv_machine_instance" "default" {
   dvd_drives {
     controller_number   = "0"
     controller_location = "1"
-    path                = ""
-    #path                = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\W11.iso"
-    resource_pool_name = ""
+    path                = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\W11.iso"
+    resource_pool_name  = ""
   }
 
   # Create a hard disk drive
