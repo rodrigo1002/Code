@@ -13,7 +13,7 @@ provider "hyperv" {
   password = "" # Update with your password
 
   # Host and port for connecting to Hyper-V
-  host = "127.0.0.1" # Hyper-V host, use localhost if running on the same machine
+  host = "Ryan-PC" # Hyper-V host, use localhost if running on the same machine
   port = 5986        # Port for WinRM HTTPS listener
 
   # Connection settings
