@@ -6,20 +6,31 @@ terraform {
     }
   }
 }
+
 provider "hyperv" {
-  user            = "Ryan-PC\\administrator"
-  password        = "password"
-  host            = "127.0.0.1"
-  port            = 5986
-  https           = true
-  insecure        = false
-  use_ntlm        = true
-  tls_server_name = ""
-  cacert_path     = ""
-  cert_path       = ""
-  key_path        = ""
-  timeout         = "30s"
+  # Username and password for connecting to Hyper-V
+  user     = "" # Update with your username
+  password = "" # Update with your password
+
+  # Host and port for connecting to Hyper-V
+  host = "127.0.0.1" # Hyper-V host, use localhost if running on the same machine
+  port = 5986        # Port for WinRM HTTPS listener
+
+  # Connection settings
+  https           = true  # Use HTTPS for WinRM
+  insecure        = false # Do not allow insecure connections
+  use_ntlm        = true  # Use NTLM authentication
+  tls_server_name = ""    # Server name for TLS verification, leave empty for default
+
+  # Certificate paths (if applicable)
+  cacert_path = "" # Path to CA certificate, leave empty if not using custom CA
+  cert_path   = "" # Path to client certificate, leave empty if not using client certificate authentication
+  key_path    = "" # Path to client private key, leave empty if not using client certificate authentication
+
+  # Timeout for connection operations
+  timeout = "30s" # Connection timeout
 }
+
 
 resource "hyperv_network_switch" "dmz" {
   name                                    = "DMZ"
@@ -40,7 +51,7 @@ resource "hyperv_network_switch" "dmz" {
 
 resource "hyperv_vhd" "webserver" {
   path = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\webserver.vhdx" #Needs to be absolute path
-  size = 10737418240                          #10GB
+  size = 10737418240                                                         #10GB
 }
 
 resource "hyperv_machine_instance" "default" {
