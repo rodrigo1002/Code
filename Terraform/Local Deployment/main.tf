@@ -170,7 +170,7 @@ resource "hyperv_machine_instance" "default" {
   dvd_drives {
     controller_number   = "0"
     controller_location = "1"
-    path                = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\W11.iso"
+   #path                = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\W11.iso"
     resource_pool_name  = ""
   }
 
