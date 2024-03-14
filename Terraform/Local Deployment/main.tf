@@ -5,14 +5,6 @@ terraform {
       version = ">= 1.0.3"
     }
   }
-  
-  cloud {
-    organization = "TerraRodrigo"
-
-    workspaces {
-      name = "Terraform-CLI"
-    }
-  }
 }
 
 provider "hyperv" {
@@ -38,6 +30,7 @@ provider "hyperv" {
   # Timeout for connection operations
   timeout = "30s" # Connection timeout
 }
+
 
 resource "hyperv_network_switch" "dmz" {
   name                                    = "DMZ"
