@@ -50,7 +50,7 @@ resource "kubernetes_service" "nginx" {
     port {
       port        = 80
       target_port = 80
-      node_port   = 8080  # Specify the node port here
+      node_port   = 30000  # Specify the node port here
     }
 
     type        = "NodePort"
