@@ -1,7 +1,5 @@
 provider "aws" {
   region     = var.aws_region
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
 }
 
 module "myapp-vpc" {
@@ -44,17 +42,8 @@ module "eks" {
   vpc_id     = module.myapp-vpc.vpc_id
 
   # to access cluster externally with kubectl
-  cluster_endpoint_public_access = true
-
-  node_security_group_additional_rules = {
-    all_ingress = {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      type        = "ingress"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  }
+  cluster_endpoint_public_access       = true
+  cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   tags = {
     environment = "development"

@@ -25,10 +25,6 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
-            - "s3:*"
-            Resource: "*"
-          - Effect: Allow
-            Action:
             - "logs:CreateLogGroup"
             - "logs:CreateLogStream"
             - "logs:PutLogEvents"
@@ -42,8 +38,7 @@ Resources:
         Fn::GetAtt: 
           - "LambdaExecutionRole"
           - "Arn"
-      Runtime: "python3.7"
+      Runtime: "python3.14"
       Code: 
         S3Bucket: !Ref S3BucketParam
         S3Key: !Ref S3KeyParam
-        

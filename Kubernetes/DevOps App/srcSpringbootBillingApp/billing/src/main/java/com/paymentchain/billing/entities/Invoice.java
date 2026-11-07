@@ -5,10 +5,12 @@
  */
 package com.paymentchain.billing.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.math.BigDecimal;
 import lombok.Data;
 
 
@@ -26,5 +28,6 @@ public class Invoice {
    private long customerId;
    private String number;
    private String detail;
-   private double amount;  
+   @Column(columnDefinition = "numeric")
+   private BigDecimal amount;
 }

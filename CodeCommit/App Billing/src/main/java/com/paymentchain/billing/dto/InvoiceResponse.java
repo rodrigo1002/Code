@@ -5,8 +5,8 @@
  */
 package com.paymentchain.billing.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import lombok.Data;
 
 /**
@@ -14,16 +14,16 @@ import lombok.Data;
  * @author sotobotero
  */
 @Data
-@ApiModel(description = "This model represent a Invoice data that user should send on a request on post method" )
+@Schema(description = "Invoice data returned by the API")
 public class InvoiceResponse {
-    @ApiModelProperty(name = "invoiceId", required = true,example = "2548975",value = "Unique Id of invoice after it's created")
-   private long invoiceId;
-     @ApiModelProperty(name = "customer", required = true,example = "1", value = "Unique Id of customer taht represent the owner of invoice")
-   private long customer;
-      @ApiModelProperty(name = "number", required = true,example = "TFS2548975",value = "Bussines number that identified a invoice",allowEmptyValue = false)
-   private String number;
-       @ApiModelProperty(name = "detail", required = false,example = "Professional services")
-   private String detail;
-        @ApiModelProperty(name = "amount", required = true,example = "3659.23")
-   private double amount; 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2548975")
+    private long invoiceId;
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    private long customer;
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "TFS2548975")
+    private String number;
+    @Schema(example = "Professional services")
+    private String detail;
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "3659.23")
+    private BigDecimal amount;
 }

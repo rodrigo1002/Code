@@ -1,2 +1,7 @@
-# devops_udemy
-# devops_udemy
+## Billing API configuration
+
+Set `BILLING_API_USER`, `BILLING_API_USER_PASSWORD`, `BILLING_ADMIN_USER`, `BILLING_ADMIN_PASSWORD`, `BILLING_DB_URL=jdbc:postgresql://postgres-service:5432/billingapp_db`, `BILLING_DB_USER=billingapp`, `BILLING_DB_PASSWORD`, `BILLING_CORS_ALLOWED_ORIGINS`, and `BILLING_DDL_AUTO=validate` through a Kubernetes Secret named `billing-api-credentials`. The PostgreSQL deployment also needs `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `BILLING_DB_PASSWORD` in `postgres-secret` for its one-time initialization script. Create both Secrets through the deployment secret manager or from protected environment files. Do not commit Secret manifests containing credentials. The old development Secret containing a weak password was removed. PostgreSQL is now exposed only as a cluster-internal service. Set `BILLING_CORS_ALLOWED_ORIGINS` to comma-separated exact frontend origins. The API requires authentication and CSRF tokens for state-changing requests.
+
+Before upgrading an existing PostgreSQL database, back it up, inspect and run `src/main/resources/db/migration/V1__invoice_amount_decimal.sql` manually. It aborts if any invoice amount has more than two decimal places. Set `BILLING_DDL_AUTO=validate` for deployment and do not use automatic Hibernate updates on production data.
+
+Invoice amounts use decimal precision and must be positive with at most two fractional digits. PUT updates an existing invoice and returns 404 if it does not exist. GET and DELETE by ID also return 404 when the invoice is absent. The checked-in Angular artifacts do not have their source project in this repository. Their embedded default Basic credential has been removed, so the UI needs to be rebuilt from maintained source and configured authentication before it can access the secured API.

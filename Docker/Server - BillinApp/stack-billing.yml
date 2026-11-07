@@ -4,38 +4,36 @@ services:
 #database engine service
   postgres_db_prod:
     container_name: postgres_prod
-    image: postgres:latest
+    image: postgres:17-alpine
     restart: always
     networks:
      - env_prod
-    ports:
-      - 5432:5432
     volumes:
         #allow *.sql, *.sql.gz, or *.sh and is execute only if data directory is empty
       - ./dbfiles:/docker-entrypoint-initdb.d
       - /var/lib/postgres_data_prod:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: qwerty
-      POSTGRES_DB: postgres    
+      POSTGRES_USER: ${POSTGRES_PROD_USER:?Set POSTGRES_PROD_USER in the environment}
+      POSTGRES_PASSWORD: ${POSTGRES_PROD_PASSWORD:?Set POSTGRES_PROD_PASSWORD in the environment}
+      POSTGRES_DB: ${POSTGRES_PROD_DB:-postgres}
+      BILLING_DB_PASSWORD: ${BILLING_PROD_DB_PASSWORD:?Set BILLING_PROD_DB_PASSWORD in the environment}
 
 
   postgres_db_prep:
     container_name: postgres_prep
-    image: postgres:latest
+    image: postgres:17-alpine
     restart: always
     networks:
      - env_prep
-    ports:
-      - 4432:5432
     volumes:
         #allow *.sql, *.sql.gz, or *.sh and is execute only if data directory is empty
       - ./dbfiles:/docker-entrypoint-initdb.d
       - /var/lib/postgres_data_prep:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: qwerty
-      POSTGRES_DB: postgres    
+      POSTGRES_USER: ${POSTGRES_PREP_USER:?Set POSTGRES_PREP_USER in the environment}
+      POSTGRES_PASSWORD: ${POSTGRES_PREP_PASSWORD:?Set POSTGRES_PREP_PASSWORD in the environment}
+      POSTGRES_DB: ${POSTGRES_PREP_DB:-postgres}
+      BILLING_DB_PASSWORD: ${BILLING_PREP_DB_PASSWORD:?Set BILLING_PREP_DB_PASSWORD in the environment}
 
 #database admin service
   adminer:
@@ -49,44 +47,58 @@ services:
      - env_prod
      - env_prep
     ports:
-       - 9090:8080
+       - 127.0.0.1:9090:8080
 
 
 #Billin app backend service
   billingapp-back-prod:
     build:
-      context: ./java
-      args:
-        - JAR_FILE=billing-0.0.3-SNAPSHOT.jar
+      context: ../../CodeCommit/App Billing
     container_name: billingApp-back-prod     
     environment:
-       - JAVA_OPTS=
-         -Xms256M 
-         -Xmx256M         
+       - JAVA_TOOL_OPTIONS=-Xms256M -Xmx256M
+       - BILLING_API_USER=${BILLING_PROD_API_USER:?Set BILLING_PROD_API_USER in the environment}
+       - BILLING_API_USER_PASSWORD=${BILLING_PROD_API_PASSWORD:?Set BILLING_PROD_API_PASSWORD in the environment}
+       - BILLING_ADMIN_USER=${BILLING_PROD_ADMIN_USER:?Set BILLING_PROD_ADMIN_USER in the environment}
+       - BILLING_ADMIN_PASSWORD=${BILLING_PROD_ADMIN_PASSWORD:?Set BILLING_PROD_ADMIN_PASSWORD in the environment}
+       - BILLING_CORS_ALLOWED_ORIGINS=${BILLING_PROD_CORS_ORIGINS:?Set BILLING_PROD_CORS_ORIGINS in the environment}
+       - BILLING_DB_URL=jdbc:postgresql://postgres_db_prod:5432/billingapp_db
+       - BILLING_DB_USER=billingapp
+       - BILLING_DB_PASSWORD=${BILLING_PROD_DB_PASSWORD:?Set BILLING_PROD_DB_PASSWORD in the environment}
+       - BILLING_DDL_AUTO=validate
+       - SERVER_PORT=7080
+       - SPRING_PROFILES_ACTIVE=production
     depends_on:     
       - postgres_db_prod
     networks:
      - env_prod
     ports:
-      - 8080:8080 
+      - 127.0.0.1:8080:7080
 
 #Billin app backend service
   billingapp-back-prep:
     build:
-      context: ./java
-      args:
-        - JAR_FILE=billing-0.0.2-SNAPSHOT.jar
+      context: ../../CodeCommit/App Billing
     container_name: billingApp-back-prep      
     environment:
-       - JAVA_OPTS=
-         -Xms256M 
-         -Xmx256M         
+       - JAVA_TOOL_OPTIONS=-Xms256M -Xmx256M
+       - BILLING_API_USER=${BILLING_PREP_API_USER:?Set BILLING_PREP_API_USER in the environment}
+       - BILLING_API_USER_PASSWORD=${BILLING_PREP_API_PASSWORD:?Set BILLING_PREP_API_PASSWORD in the environment}
+       - BILLING_ADMIN_USER=${BILLING_PREP_ADMIN_USER:?Set BILLING_PREP_ADMIN_USER in the environment}
+       - BILLING_ADMIN_PASSWORD=${BILLING_PREP_ADMIN_PASSWORD:?Set BILLING_PREP_ADMIN_PASSWORD in the environment}
+       - BILLING_CORS_ALLOWED_ORIGINS=${BILLING_PREP_CORS_ORIGINS:?Set BILLING_PREP_CORS_ORIGINS in the environment}
+       - BILLING_DB_URL=jdbc:postgresql://postgres_db_prep:5432/billingapp_db
+       - BILLING_DB_USER=billingapp
+       - BILLING_DB_PASSWORD=${BILLING_PREP_DB_PASSWORD:?Set BILLING_PREP_DB_PASSWORD in the environment}
+       - BILLING_DDL_AUTO=validate
+       - SERVER_PORT=7080
+       - SPRING_PROFILES_ACTIVE=production
     depends_on:     
       - postgres_db_prep
     networks:
      - env_prep
     ports:
-      - 7080:7080 
+     - 127.0.0.1:7080:7080
 
 #Billin app frontend service
   billingapp-front-prod:
@@ -131,7 +143,7 @@ services:
     networks:
      - env_prep 
     ports:
-      - 81:81
+       - 81:80
 
 networks:
   env_prod:

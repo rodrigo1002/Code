@@ -163,7 +163,7 @@ class BillingAPIService {
     constructor(httpClient, basePath, configuration) {
         this.httpClient = httpClient;
         this.basePath = '/';
-        this.defaultHeaders = new _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpHeaders"]({ Authorization: 'Basic ' + btoa("admin:admin") });
+        this.defaultHeaders = new _angular_common_http__WEBPACK_IMPORTED_MODULE_0__["HttpHeaders"]();
         this.configuration = new _configuration__WEBPACK_IMPORTED_MODULE_2__["Configuration"]();
         if (basePath) {
             this.basePath = basePath;
@@ -625,4 +625,3 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineInjector
 /***/ })
 
 },[[0,"runtime","vendor"]]]);
-//# sourceMappingURL=main.js.map

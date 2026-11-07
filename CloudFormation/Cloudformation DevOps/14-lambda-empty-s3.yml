@@ -1,3 +1,9 @@
+Parameters:
+  BucketName:
+    Description: Existing S3 bucket this custom resource is allowed to empty
+    Type: String
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+
 Resources: 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -19,14 +25,18 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
-            - "s3:*"
-            Resource: "*"
+            - "s3:ListBucket"
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${BucketName}"
+          - Effect: Allow
+            Action:
+            - "s3:DeleteObject"
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${BucketName}/*"
           - Effect: Allow
             Action:
             - "logs:CreateLogGroup"
             - "logs:CreateLogStream"
             - "logs:PutLogEvents"
-            Resource: "*"
+            Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${EmptyS3BucketLambda}:*"
 
   EmptyS3BucketLambda: 
     Type: "AWS::Lambda::Function"
@@ -36,7 +46,7 @@ Resources:
         Fn::GetAtt: 
           - "LambdaExecutionRole"
           - "Arn"
-      Runtime: "python3.7"
+      Runtime: "python3.14"
       # we give the function a large timeout 
       # so we can wait for the bucket to be empty
       Timeout: 600
@@ -46,7 +56,7 @@ Resources:
           # -*- coding: utf-8 -*-
           import json
           import boto3
-          from botocore.vendored import requests
+          from urllib.request import Request, urlopen
 
           def handler(event, context):
               try:
@@ -73,7 +83,15 @@ Resources:
                               'LogicalResourceId': event['LogicalResourceId'],
                               'Data': json.loads("{}")}
 
-              requests.put(event['ResponseURL'], data=json.dumps(response_body))
+              response_data = json.dumps(response_body).encode('utf-8')
+              request = Request(
+                  event['ResponseURL'],
+                  data=response_data,
+                  headers={'content-type': '', 'content-length': str(len(response_data))},
+                  method='PUT'
+              )
+              with urlopen(request) as response:
+                  response.read()
 
 Outputs:
   StackSSHSecurityGroup:

@@ -1,7 +1,7 @@
-output "instance_name" {
-  value = aws_instance.example.name
+output "load_balancer_dns_name" {
+  value = aws_lb.example.dns_name
 }
 
-output "instance_ip" {
-  value = aws_instance.example.public_ip
+output "instance_public_ips" {
+  value = aws_instance.docker[*].public_ip
 }

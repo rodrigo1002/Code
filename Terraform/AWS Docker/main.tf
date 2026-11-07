@@ -1,122 +1,165 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 provider "aws" {
-  region = "eu-central-1"
+  region = var.aws_region
 }
 
-variable vpc_cidr_block {}
-variable subnet_cidr_block {}
-variable avail_zone {}
-variable env_prefix {}
-variable my_ip {}
-variable instance_type {}
-variable public_key_location {}
-
-resource "aws_vpc" "myapp-vpc" {
-  cidr_block = var.vpc_cidr_block
-  tags = {
-    Name: "${var.env_prefix}-vpc"
+variable "aws_region" {
+  description = "AWS region for the example deployment"
+  type        = string
+  default     = "eu-central-1"
+}
+variable "vpc_cidr_block" {
+  description = "CIDR block for the application VPC"
+  type        = string
+  default     = "10.20.0.0/16"
+}
+variable "subnet_cidr_block" {
+  description = "CIDR block for the public application subnet"
+  type        = string
+  default     = "10.20.1.0/24"
+}
+variable "avail_zone" {
+  description = "Availability zone for the instance"
+  type        = string
+  default     = "eu-central-1a"
+}
+variable "env_prefix" {
+  description = "Prefix used for resource names"
+  type        = string
+  default     = "dev"
+}
+variable "admin_cidr" {
+  description = "Administrator CIDR allowed to SSH to the instance"
+  type        = string
+  validation {
+    condition     = can(cidrhost(var.admin_cidr, 0)) && var.admin_cidr != "0.0.0.0/0"
+    error_message = "admin_cidr must be a valid, restricted IPv4 CIDR range."
   }
 }
-
-resource "aws_subnet" "myapp-subnet-1" {
-  vpc_id = aws_vpc.myapp-vpc.id
-  cidr_block = var.subnet_cidr_block
-  availability_zone = var.avail_zone
-    tags = {
-    Name: "${var.env_prefix}-subnet-1"
+variable "app_ingress_cidr" {
+  description = "CIDR allowed to access the application on port 8080"
+  type        = string
+  validation {
+    condition     = can(cidrhost(var.app_ingress_cidr, 0)) && var.app_ingress_cidr != "0.0.0.0/0"
+    error_message = "app_ingress_cidr must be a valid, restricted IPv4 CIDR range."
   }
 }
-
-resource "aws_internet_gateway" "myapp-igw" {
-  vpc_id = aws_vpc.myapp-vpc.id
-  tags = {
-    Name: "${var.env_prefix}-igw"
-  }
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+variable "public_key_location" {
+  description = "Path to the SSH public key file"
+  type        = string
 }
 
-resource "aws_default_route_table" "main-rtb" {
-  default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.myapp-igw.id
-  }
-  tags = {
-    Name: "${var.env_prefix}-main-rtb"
-  }
-}
-
-resource "aws_default_security_group" "default-sg" {
-  vpc_id = aws_vpc.myapp-vpc.id
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "TCP"
-    cidr_blocks = [var.my_ip]
-  }
-
-  ingress {
-    from_port = 8080
-    to_port = 8080
-    protocol = "TCP"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    prefix_list_ids = []
-  }
-
-  tags = {
-    Name: "${var.env_prefix}-default-sg"
-  }
-}
-
-data "aws_ami" "latest-amazon-linux-image" {
+data "aws_ami" "amazon_linux" {
   most_recent = true
-  owners = ["amazon"]
+  owners      = ["amazon"]
+
   filter {
-    name = "name" 
-    values = ["amzn2-ami-kernel-*-x86_64-gp2"]
+    name   = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
   }
   filter {
-    name = "virtualization-type"
+    name   = "virtualization-type"
     values = ["hvm"]
   }
 }
 
-output "aws-ami_id" {
-  value = data.aws_ami.latest-amazon-linux-image.id
+resource "aws_vpc" "myapp" {
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags = { Name = "${var.env_prefix}-vpc" }
 }
 
-output "ec2-public_ip" {
-  value = aws_instance.myapp-server.public_ip
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.myapp.id
+  cidr_block              = var.subnet_cidr_block
+  availability_zone       = var.avail_zone
+  map_public_ip_on_launch = true
+  tags = { Name = "${var.env_prefix}-subnet" }
 }
 
-resource "aws_key_pair" "ssh-key" {
-  key_name = "server-key"
+resource "aws_internet_gateway" "myapp" {
+  vpc_id = aws_vpc.myapp.id
+  tags   = { Name = "${var.env_prefix}-igw" }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.myapp.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.myapp.id
+  }
+  tags = { Name = "${var.env_prefix}-public-rtb" }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_security_group" "application" {
+  name        = "${var.env_prefix}-application"
+  description = "Restrict SSH and application ingress to configured CIDRs"
+  vpc_id      = aws_vpc.myapp.id
+
+  ingress {
+    description = "Administrator SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_cidr]
+  }
+  ingress {
+    description = "Application traffic"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = [var.app_ingress_cidr]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = { Name = "${var.env_prefix}-application-sg" }
+}
+
+resource "aws_key_pair" "ssh" {
+  key_name   = "${var.env_prefix}-server-key"
   public_key = file(var.public_key_location)
 }
 
-resource "aws_instance" "myapp-server" {
-  ami = data.aws_ami.latest-amazon-linux-image.id
-  instance_type = var.instance_type
-
-  subnet_id = aws_subnet.myapp-subnet-1.id
-  vpc_security_group_ids = [aws_default_security_group.default-sg.id]
-  availability_zone = var.avail_zone
-
+resource "aws_instance" "myapp" {
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = var.instance_type
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.application.id]
+  availability_zone           = var.avail_zone
   associate_public_ip_address = true
-  key_name = aws_key_pair.ssh-key.key_name
-
-  user_data = file("entry-script.sh")
-  
+  key_name                    = aws_key_pair.ssh.key_name
+  user_data                   = file("entry-script.sh")
   user_data_replace_on_change = true
 
-  tags = {
-    Name: "${var.env_prefix}-server"
-  }
+  tags = { Name = "${var.env_prefix}-server" }
+}
+
+output "ami_id" {
+  value = data.aws_ami.amazon_linux.id
+}
+output "instance_public_ip" {
+  value = aws_instance.myapp.public_ip
 }

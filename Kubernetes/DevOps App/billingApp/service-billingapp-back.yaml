@@ -8,8 +8,6 @@ spec:
   ports:
   - name: billing-app-back
     port: 7080
-    nodePort : 30780 
-  #type: LoadBalancer
-  type: NodePort
+  type: ClusterIP
   selector:
    app: billing-app-back

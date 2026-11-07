@@ -10,6 +10,7 @@ import com.paymentchain.billing.entities.Invoice;
 import java.util.List;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
@@ -23,6 +24,12 @@ public interface InvoiceRequestMapper {
       @Mappings({
         @Mapping(source = "customer", target = "customerId")})
     Invoice InvoiceRequestToInvoice(InvoiceRequest source);
+
+    @Mappings({
+        @Mapping(source = "customer", target = "customerId"),
+        @Mapping(target = "id", ignore = true)
+    })
+    void updateInvoiceFromRequest(InvoiceRequest source, @MappingTarget Invoice target);
                 
     List<Invoice> InvoiceRequestListToInvoiceList(List<InvoiceRequest> source);
     

@@ -7,7 +7,9 @@ Parameters:
   
   CidrSSH:
     Type: String
-    Default: "0.0.0.0/0"
+    Description: CIDR range allowed to connect over SSH
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])/(3[0-2]|[1-2]?[1-9])$
 
   CidrHTTP:
     Type: String

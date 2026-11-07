@@ -6,6 +6,7 @@
 package com.paymentchain.billing.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import lombok.Data;
 
 /**
@@ -24,5 +25,5 @@ public class InvoiceResponse {
        @Schema(name = "detail", required = false,example = "Professional services")
    private String detail;
         @Schema(name = "amount", required = true,example = "3659.23")
-   private double amount; 
+   private BigDecimal amount;
 }

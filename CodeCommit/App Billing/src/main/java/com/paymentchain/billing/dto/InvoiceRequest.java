@@ -5,8 +5,12 @@
  */
 package com.paymentchain.billing.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import lombok.Data;
 
 /**
@@ -14,16 +18,24 @@ import lombok.Data;
  * @author sotobotero
  */
 @Data
-@ApiModel(description = "This model represent a Invoice data that user receive when make a request method" )
+@Schema(description = "Invoice data sent in an API request")
 public class InvoiceRequest {
-    
-    @ApiModelProperty(name = "customer", required = true,example = "1", value = "Unique Id of customer taht represent the owner of invoice")
-    private long customer;
-     @ApiModelProperty(name = "number", required = true,example = "2548975",value = "Bussines number that identified a invoice",allowEmptyValue = false)
-  private String number;
-      @ApiModelProperty(name = "detail", required = false,example = "Professional services")
-   private String detail;
-      @ApiModelProperty(name = "amount", required = true,example = "3659.23")
-   private double amount;    
-   
+
+    @NotNull
+    @Positive
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    private Long customer;
+
+    @NotBlank
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "2548975")
+    private String number;
+
+    @Schema(example = "Professional services")
+    private String detail;
+
+    @NotNull
+    @Positive
+    @Digits(integer = 17, fraction = 2)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "3659.23")
+    private BigDecimal amount;
 }

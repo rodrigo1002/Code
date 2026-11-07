@@ -1,9 +1,17 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+  BucketName:
+    Description: Globally unique name for the bucket managed by this stack
+    Type: String
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+
 Resources:
   myBucketResource:
     Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
 
   LambdaUsedToCleanUp:
     Type: Custom::cleanupbucket
