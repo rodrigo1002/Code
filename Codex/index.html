@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A local instrument panel for Windows PC health and performance">
+    <meta name="theme-color" content="#0a1220">
+    <title>System monitor | Local PC</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topbar">
+        <button class="menu-button" id="menu" aria-expanded="false" aria-controls="nav" aria-label="Toggle navigation"><span aria-hidden="true">☰</span><span class="menu-word">Menu</span></button>
+        <a class="brand" href="#overview" aria-label="Local PC monitor home"><span class="brand-mark" aria-hidden="true">M</span><span>Local PC <small>MONITOR</small></span></a>
+        <div class="topbar-spacer"></div>
+        <div class="refresh-control"><span class="live-dot" aria-hidden="true"></span><label for="interval">Refresh</label><select id="interval"><option value="5">5 sec</option><option value="10" selected>10 sec</option><option value="30">30 sec</option><option value="60">60 sec</option><option value="0">Manual</option></select></div>
+        <button class="refresh-button" id="refresh"><span aria-hidden="true">↻</span> Refresh now</button>
+    </header>
+    <div class="shell">
+        <nav id="nav" aria-label="Dashboard sections">
+            <span class="nav-caption">System</span>
+            <a href="#overview" class="active"><span class="nav-icon">◉</span>Overview</a>
+            <a href="#performance"><span class="nav-icon">⌁</span>Performance</a>
+            <a href="#storage"><span class="nav-icon">▤</span>Storage</a>
+            <a href="#network"><span class="nav-icon">⌘</span>Network</a>
+            <span class="nav-caption nav-caption-lower">Diagnostics</span>
+            <a href="#security"><span class="nav-icon">◇</span>Security</a>
+            <a href="#hardware"><span class="nav-icon">▦</span>Hardware</a>
+            <a href="#errors"><span class="nav-icon">≡</span>Collection log</a>
+            <div class="nav-foot"><span class="local-symbol">⌂</span><span>Private by design<small>Data stays on this device</small></span></div>
+        </nav>
+        <main id="main">
+            <div class="page-heading"><div><p class="eyebrow">DEVICE STATUS / LOCAL</p><h1>System overview</h1></div><p id="notice" role="status" aria-live="polite">Loading local dashboard data…</p></div>
+            <section id="overview" aria-labelledby="overview-title"><h2 class="sr-only" id="overview-title">System overview</h2><div class="cards" id="summary"></div></section>
+            <section id="performance" aria-labelledby="performance-title"><div class="section-heading"><div><p class="eyebrow">LIVE TELEMETRY</p><h2 id="performance-title">Performance</h2></div><span class="section-meta">Rolling history <b>60</b> samples</span></div><div class="cards" id="performanceCards"></div><div class="charts"><article class="chart-panel"><h3>Processor load <small>CPU · percent</small></h3><canvas id="cpuChart" role="img" aria-label="CPU utilization history"></canvas><div class="chart-scale"><span>0%</span><span>50%</span><span>100%</span></div></article><article class="chart-panel"><h3>Memory pressure <small>RAM · percent</small></h3><canvas id="memoryChart" role="img" aria-label="Memory utilization history"></canvas><div class="chart-scale"><span>0%</span><span>50%</span><span>100%</span></div></article></div></section>
+            <section id="storage" aria-labelledby="storage-title"><div class="section-heading"><div><p class="eyebrow">CAPACITY</p><h2 id="storage-title">Storage</h2></div></div><div id="storageContent" class="stack-list"></div></section>
+            <section id="network" aria-labelledby="network-title"><div class="section-heading"><div><p class="eyebrow">CONNECTIVITY</p><h2 id="network-title">Network adapters</h2></div></div><div id="networkContent" class="stack-list"></div></section>
+            <section id="security" aria-labelledby="security-title"><div class="section-heading"><div><p class="eyebrow">PROTECTION</p><h2 id="security-title">Windows health &amp; security</h2></div></div><div class="cards" id="securityContent"></div></section>
+            <section id="hardware" aria-labelledby="hardware-title"><div class="section-heading"><div><p class="eyebrow">COMPONENTS</p><h2 id="hardware-title">Hardware</h2></div></div><div class="cards" id="hardwareContent"></div></section>
+            <section id="errors" aria-labelledby="errors-title"><div class="section-heading"><div><p class="eyebrow">DIAGNOSTICS</p><h2 id="errors-title">Collection log</h2></div></div><pre id="errorsContent">No data yet.</pre></section>
+            <details><summary>How the health score works</summary><p>Warnings deduct 8 points; critical states deduct 20. CPU, memory, and storage warn at 80% and are critical at 90%. Unavailable security data is neutral.</p></details>
+            <footer>Local PC Monitor <span>System data collected on this device</span></footer>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

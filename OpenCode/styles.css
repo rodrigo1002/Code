@@ -1,0 +1,1463 @@
+/* ============================================================
+   Top 100 DJs de música electrónica — Hoja de estilos
+
+   Dirección: hoja de chart impresa. Dos tintas (negro frío y
+   magenta de imprenta), reglas capilares de 1 px, cero radios y
+   una retícula de contactos donde las fotos comparten línea.
+   Sin degradados, sin resplandores, sin sombras.
+   ============================================================ */
+
+/* --- Tintas y medidas --- */
+:root {
+  --ink: #08090c;
+  --ink-raised: #0e1014;
+  --line: #24272e;
+  --line-soft: rgba(255, 255, 255, 0.06);
+  --chalk: #ecedec;
+  --ash: #a2a8b0;
+  --ash-dim: #7b8089;
+  --spot: #ff2d6f;
+
+  /* Bahnschrift (DIN) y Consolas existen en Windows sin descargar nada.
+     Las alternativas mantienen el carácter si no estuvieran. */
+  --font-display: "Bahnschrift", "DIN Alternate", "Franklin Gothic Medium",
+    "Trebuchet MS", system-ui, sans-serif;
+  --font-mono: "Consolas", "Cascadia Mono", ui-monospace, "Courier New",
+    monospace;
+
+  --pad: 1.5rem;
+  --col: 1200px;
+}
+
+/* --- Reset básico --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* El atributo hidden debe ganar siempre a los display de cada componente
+   (por ejemplo, la fila flex del botón de limpiar filtros). */
+[hidden] {
+  display: none !important;
+}
+
+/* Texto solo para lectores de pantalla: sigue en el árbol de accesibilidad
+   pero no ocupa espacio ni se ve. Se usa para dar contexto al puesto del
+   ranking y para nombrar la sección del listado sin añadir ruido visual. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--ink);
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Un solo color de foco en toda la página. */
+:focus-visible {
+  outline: 2px solid var(--spot);
+  outline-offset: 3px;
+}
+
+/* --- Encabezado --- */
+/* Cabecera a dos columnas: el título manda a la izquierda, la entradilla
+   se apoya en su línea base a la derecha. */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-areas: "title intro";
+  align-items: end;
+  gap: 1.5rem clamp(2rem, 5vw, 4rem);
+  max-width: var(--col);
+  margin: 0 auto;
+  padding: clamp(3.5rem, 9vw, 6.5rem) var(--pad) clamp(1.75rem, 3.5vw, 2.5rem);
+}
+
+/* Retícula tenue de papel de dibujo: textura, no resplandor. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
+  pointer-events: none;
+}
+
+/* Regla inferior que se traza una sola vez al cargar. */
+.hero::after {
+  content: "";
+  position: absolute;
+  right: var(--pad);
+  bottom: 0;
+  left: var(--pad);
+  height: 1px;
+  background: var(--line);
+  transform-origin: left center;
+  animation: rule-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes rule-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hero__title {
+  position: relative;
+  grid-area: title;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+
+.hero__count {
+  font-size: clamp(3.4rem, 11vw, 8rem);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+}
+
+.hero__subject {
+  margin-top: 0.5rem;
+  font-size: clamp(1.35rem, 4.1vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ash);
+}
+
+.hero__intro {
+  position: relative;
+  grid-area: intro;
+  max-width: 44ch;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ash);
+}
+
+/* --- Contenedor principal --- */
+.main {
+  max-width: var(--col);
+  margin: 0 auto;
+  padding: 0 var(--pad) clamp(3rem, 6vw, 5rem);
+}
+
+/* --- Barra de trabajo --- */
+/* Filtros y recuento se quedan pegados arriba: con 100 fichas la página es
+   muy larga y ambas cosas deben seguir a mano. */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ink);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 0 1.5rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.field__label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  color: var(--ash-dim);
+}
+
+/* Campos sin caja: solo una línea base, como un formulario impreso. */
+.field__input {
+  width: 100%;
+  padding: 0.4rem 0 0.45rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.field__input::placeholder {
+  color: var(--ash-dim);
+}
+
+.field__input:hover {
+  border-bottom-color: #3a3e47;
+}
+
+/* El anillo de foco lo pone la regla global :focus-visible (2 px --spot).
+   Aquí solo se refuerza el subrayado: no anular el outline. */
+.field__input:focus,
+.field__input:focus-visible {
+  border-bottom-color: var(--spot);
+}
+
+.field__select {
+  padding-right: 1.35rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M0 0h9L4.5 6z' fill='%237b8089'/%3E%3C/svg%3E");
+  background-position: right 2px center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  appearance: none;
+}
+
+.field__select option {
+  background: var(--ink-raised);
+  color: var(--chalk);
+}
+
+/* Botón de limpiar: comparte fila con el contador de resultados. */
+.controls__actions {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.btn-reset {
+  /* Área táctil mínima de 24 px (WCAG 2.5.8). */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--spot);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.btn-reset:hover {
+  border-bottom-color: var(--spot);
+}
+
+/* --- Contador de resultados --- */
+.results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.results-info {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ash);
+}
+
+/* --- Estadísticas --- */
+.stats {
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+.section__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.section__note {
+  max-width: 80ch;
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ash-dim);
+}
+
+/* Resumen numérico: una tabla de cuatro celdas separadas por reglas. */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 1.5rem;
+  background: var(--line);
+  border-top: 1px solid var(--line);
+}
+
+.stat {
+  padding: 1rem 1.25rem 1.15rem;
+  background: var(--ink);
+  min-width: 0;
+}
+
+/* La primera celda alinea su texto con el resto de la página. */
+.stat:first-child {
+  padding-left: 0;
+}
+
+.stat__label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ash-dim);
+}
+
+.stat__value {
+  margin-top: 0.5rem;
+  font-size: clamp(2rem, 3.4vw, 2.9rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El nombre de un género necesita menos cuerpo que una cifra. */
+.stat__value--text {
+  font-size: clamp(1.1rem, 1.6vw, 1.4rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  padding-top: 0.15rem;
+}
+
+.stat__hint {
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Paneles de distribución --- */
+.stats-panels {
+  border-bottom: 1px solid var(--line);
+}
+
+.panel {
+  border-top: 1px solid var(--line);
+}
+
+.panel[open] {
+  background: var(--ink-raised);
+}
+
+/* Fila plegable: marcador, título y dato clave, como un índice impreso. */
+.panel__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.panel__title::-webkit-details-marker {
+  display: none;
+}
+
+/* Marcador tipográfico: + cerrado, − abierto. */
+.panel__title::before {
+  content: "+";
+  flex-shrink: 0;
+  width: 0.85rem;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--spot);
+}
+
+.panel[open] .panel__title::before {
+  content: "−";
+}
+
+.panel__heading {
+  flex: 1 1 auto;
+}
+
+.panel__hint {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--ash-dim);
+  text-align: right;
+}
+
+.panel__title:focus-visible {
+  outline-offset: -2px;
+}
+
+.panel__note {
+  padding: 0 1rem 1rem 1.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash-dim);
+}
+
+/* --- Barras horizontales --- */
+.bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.9rem 2.5rem;
+  padding: 0 1rem 1.25rem 1.6rem;
+  list-style: none;
+}
+
+.bar__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.82rem;
+}
+
+.bar__label {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.bar__value {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash-dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar__track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+/* El ancho lo calcula app.js según los datos reales. */
+.bar__fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--spot);
+}
+
+/* --- Cómo se construyó este ranking --- */
+/* Nota de método: cinco dimensiones cualitativas, sin cifras. Por eso no usa
+   --spot ni barras: la tinta y las barras codifican magnitudes en este sitio. */
+.method {
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+.method__lead {
+  max-width: 68ch;
+  margin-top: 0.9rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+
+/* Cinco celdas con una regla capilar encima: la misma lógica de hoja impresa
+   que las cifras, pero sin caja que sugiera una medida. */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.25rem 2rem;
+  margin-top: 1.5rem;
+}
+
+.method__item {
+  min-width: 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.method__term {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.method__text {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+
+.method__foot {
+  max-width: 80ch;
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--ash-dim);
+}
+
+/* --- Mensaje sin resultados --- */
+.empty {
+  max-width: 46ch;
+  padding: 2.5rem 0 1.5rem;
+  color: var(--ash);
+}
+
+/* --- Retícula de DJs: hoja de contactos --- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(206px, 1fr));
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+/* Sin resultados no hay hoja: evita una regla suelta sobre el vacío. */
+.grid:empty {
+  display: none;
+}
+
+/* --- Ficha de cada DJ --- */
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--ink);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transition: background-color 0.18s ease;
+}
+
+/* Cabecera de la ficha: posición y género, como el lomo de un disco. */
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+.card__rank {
+  color: var(--spot);
+  font-variant-numeric: tabular-nums;
+}
+
+.card__genre {
+  min-width: 0;
+  color: var(--ash);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* La foto es el disparador de la ficha: la celda entera actúa de botón.
+   Se neutraliza el estilo nativo para que siga pareciendo una hoja impresa. */
+.card__media {
+  appearance: none;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  background: #0b0c0f;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* El anillo de foco entra dentro de la celda: con 3 px de separación se
+   saldría del recuadro y taparía la regla capilar del vecino. */
+.card__media:focus-visible {
+  outline-offset: -3px;
+}
+
+/* En táctil las cien fotos se ven en color: el gris es un estado de reposo
+   que solo tiene sentido cuando existe hover. */
+.card__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.4s ease;
+}
+
+.card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem 0.6rem 0.7rem;
+}
+
+.card__name {
+  font-size: clamp(0.88rem, 1.1vw, 0.98rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+}
+
+.card__country {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--ash-dim);
+}
+
+/* Banderita pequeña junto al país (SVG inline, sin archivos) */
+.flag {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 18px;
+  height: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.flag svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    background: var(--ink-raised);
+  }
+
+  /* Solo donde hay cursor: en reposo el gris unifica las cien fotos y el
+     color premia la exploración. En táctil no hay hover, así que se ven
+     siempre en color. */
+  .card__photo {
+    filter: grayscale(1) contrast(1.05);
+  }
+
+  /* El color premia la exploración y, además, señala la zona clicable:
+     solo se recupera al pasar el cursor por la foto o al enfocarla. */
+  .card__media:hover .card__photo,
+  .card__media:focus-visible .card__photo {
+    filter: none;
+  }
+}
+
+/* --- Ficha individual de un DJ --- */
+/* Diálogo nativo sobre la hoja de chart: una ficha impresa más, con las
+   mismas reglas capilares y sin radios, sombras ni degradados. */
+.detail {
+  width: min(880px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  max-height: min(92vh, 900px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--chalk);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* ::backdrop no hereda variables de forma fiable: se repite el valor de
+   --ink (#08090c) al 86 % en literal. */
+.detail::backdrop {
+  background: rgba(8, 9, 12, 0.86);
+}
+
+.detail__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.detail__rank {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--spot);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón de vuelta: solo una caja capilar, como un sello de archivo. */
+.detail__back {
+  appearance: none;
+  padding: 0.4rem 0.7rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--ash);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.detail__back:hover,
+.detail__back:focus-visible {
+  color: var(--chalk);
+  border-color: var(--spot);
+}
+
+.detail__body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.detail__media {
+  background: #0b0c0f;
+  border-right: 1px solid var(--line);
+}
+
+/* La ficha recupera el color de la foto: en grande, el retrato manda. */
+.detail__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.detail__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.detail__name {
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.detail__facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* Fila de datos: etiqueta a la izquierda, valor a la derecha. */
+.detail__row {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, max-content) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.detail__row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.detail__label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--ash-dim);
+}
+
+.detail__value {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+
+.detail__context {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--ash);
+}
+
+/* Reseña editorial: texto de contexto, no un dato del ranking. */
+.detail__bio {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.detail__kicker {
+  margin-bottom: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--spot);
+}
+
+.detail__bio-text {
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+
+.detail__note {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--ash-dim);
+}
+
+.detail__value .flag {
+  width: 22px;
+  height: 15px;
+}
+
+/* Con el diálogo abierto el fondo no debe desplazarse; el hueco que deja
+   la barra de desplazamiento se reserva para que la página no salte. */
+html.detail-open {
+  overflow: hidden;
+  padding-right: var(--scrollbar-gap, 0px);
+}
+
+/* --- Pie de página --- */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 2rem;
+  max-width: var(--col);
+  margin: 0 auto;
+  padding: 1.25rem var(--pad) 3rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash-dim);
+}
+
+.footer__credits {
+  /* Sin opacidad: --ash-dim ya da 5,02:1 sobre --ink. Rebajarla la dejaba
+     en 3,26:1, por debajo del mínimo AA. */
+  color: var(--ash-dim);
+}
+
+/* --- Mapa global --- */
+/* Cartografía de tinta: países rellenos con --ink-raised y fronteras
+   capilares. Los marcadores se recolocan en unidades del viewBox y su grupo
+   nunca recibe transform, así que no cambian de tamaño con el zoom. */
+.map {
+  padding-top: clamp(2rem, 4vw, 3rem);
+}
+
+.map__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.map__controls .field:first-child {
+  flex: 1 1 220px;
+}
+
+.map__controls .field:nth-child(2) {
+  flex: 0 1 210px;
+}
+
+/* Casilla de verificación: área táctil de 24 px sin caja nueva. */
+.map__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 24px;
+  padding-bottom: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ash);
+  cursor: pointer;
+}
+
+.map__check input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.map__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.map__canvas {
+  position: relative;
+  border: 1px solid var(--line);
+  background: #0b0c0f;
+}
+
+.map__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* Al arrastrar cambia el cursor, no el foco: el anillo sigue siendo el
+   global de :focus-visible. */
+.map__svg.is-dragging {
+  cursor: grabbing;
+}
+
+.map__countries {
+  fill: var(--ink-raised);
+  stroke: var(--line);
+  stroke-width: 0.4;
+  vector-effect: non-scaling-stroke;
+}
+
+/* La retícula se recalcula con el zoom: trazo siempre de 1 px. */
+.map__graticule line {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.map__dot {
+  fill: var(--chalk);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.map__ring {
+  fill: none;
+  stroke: var(--ash);
+  stroke-width: 1.2;
+}
+
+/* Halo del marcador seleccionado: el único uso del acento en el mapa. */
+.map__halo {
+  fill: none;
+  stroke: var(--spot);
+  stroke-width: 1;
+}
+
+.map__marker,
+.map__cluster {
+  cursor: pointer;
+}
+
+/* Un <g> sin relleno no recibe clics: el área la aportan sus formas. */
+.map__marker > *,
+.map__cluster > * {
+  pointer-events: all;
+}
+
+.map__marker.is-selected .map__dot,
+.map__marker.is-selected .map__ring {
+  stroke: var(--spot);
+  stroke-width: 2;
+}
+
+/* Refuerzo del foco de teclado, como el subrayado de los campos: el anillo
+   exterior sigue siendo el global, no se anula el outline. */
+.map__marker:focus-visible .map__dot,
+.map__marker:focus-visible .map__ring,
+.map__cluster:focus-visible .map__cluster-dot {
+  stroke: var(--spot);
+  stroke-width: 2;
+}
+
+.map__cluster-dot {
+  fill: var(--ink-raised);
+  stroke: var(--chalk);
+  stroke-width: 1;
+}
+
+.map__cluster-count {
+  fill: var(--chalk);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.map__zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 1px;
+}
+
+.map__zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--chalk);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.map__zoom-btn:hover,
+.map__zoom-btn:focus-visible {
+  border-color: var(--spot);
+  color: var(--spot);
+}
+
+/* Panel lateral: la ficha del marcador seleccionado. */
+.map__panel {
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+}
+
+.map__panel-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--ash-dim);
+}
+
+.map__panel-name {
+  margin-top: 0.15rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+
+.map__panel-facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0.75rem 0 0;
+}
+
+.map__panel-row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.15rem 0.75rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.map__panel-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--ash-dim);
+}
+
+.map__panel-value {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+
+.map__panel-note {
+  margin-top: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash);
+}
+
+.map__panel-hint {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--ash-dim);
+}
+
+.map__panel-open,
+.map__panel-dj {
+  appearance: none;
+  padding: 0.3rem 0.55rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--ash);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map__panel-open {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 0.9rem;
+  color: var(--chalk);
+}
+
+.map__panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 20rem;
+  margin-top: 0.6rem;
+  padding-right: 1px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.map__panel-dj {
+  display: block;
+  width: 100%;
+  min-height: 24px;
+}
+
+.map__panel-open:hover,
+.map__panel-dj:hover {
+  border-color: var(--spot);
+  color: var(--chalk);
+}
+
+.map__panel-city {
+  color: var(--ash-dim);
+}
+
+/* Leyenda: punto, anillo y raya, con la misma forma que el mapa. */
+.map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin-top: 1rem;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--ash-dim);
+}
+
+.map__legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.map__key {
+  position: relative;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+}
+
+.map__key--city::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: var(--chalk);
+  clip-path: circle(50% at 50% 50%);
+}
+
+.map__key--country::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 1px solid var(--ash);
+  clip-path: circle(50% at 50% 50%);
+}
+
+.map__key--unknown::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--ash-dim);
+}
+
+.map__summary {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash-dim);
+}
+
+.map__panels {
+  margin-top: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* El marcador +/− de los paneles lo dibuja .panel__title::before; este span
+   solo existe como gancho de la estructura. */
+.map .panel__mark {
+  display: none;
+}
+
+.map__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.1rem 2rem;
+  padding: 0 1rem 1.25rem 1.6rem;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ash);
+}
+
+.map__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.map__list-count {
+  color: var(--ash-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  /* La cabecera vuelve a una sola columna. */
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "intro";
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .hero__intro {
+    max-width: 58ch;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* En dos columnas la alineación izquierda aplica a la celda impar. */
+  .stat,
+  .stat:first-child {
+    padding-left: 1.25rem;
+  }
+
+  .stat:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  /* El mapa y su panel pasan a una columna: el panel queda debajo. */
+  .map__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .map__panel {
+    padding-top: 0.75rem;
+  }
+}
+
+/* Cinco columnas por debajo de ~1120 px dejan cada criterio en 4-6 líneas. */
+@media (max-width: 1120px) {
+  .method-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --pad: 1rem;
+  }
+
+  /* En móvil la barra ocuparía demasiado alto: vuelve al flujo normal. */
+  .toolbar {
+    position: static;
+  }
+
+  .controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+  }
+
+  /* El buscador ocupa la fila completa; género y país comparten la segunda. */
+  .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .bar__head {
+    font-size: 0.78rem;
+  }
+
+  /* La ficha pasa a una sola columna: foto arriba, datos abajo. */
+  .detail {
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+    max-height: 94vh;
+  }
+
+  .detail__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail__media {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .detail__info {
+    padding: 1rem;
+  }
+
+  .method-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+  }
+
+  /* Los recuentos por país, a una sola columna. */
+  .map__list--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 460px) {
+  .bars {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel__title {
+    flex-wrap: wrap;
+    gap: 0.1rem 0.75rem;
+  }
+
+  .panel__hint {
+    width: 100%;
+    padding-left: 1.6rem;
+    text-align: left;
+  }
+
+  /* En pantallas estrechas cada dato ocupa su propia línea. */
+  .detail__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+
+  .detail__head {
+    flex-wrap: wrap;
+  }
+
+  .method-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Controles del mapa y leyenda, en una columna. */
+  .map__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .map__controls .field,
+  .map__controls .field:first-child,
+  .map__controls .field:nth-child(2) {
+    flex: 1 1 auto;
+  }
+
+  .map__check {
+    padding-bottom: 0;
+  }
+
+  .map__legend {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+}
+
+/* Pantallas muy estrechas: los desplegables se cortarían en dos columnas. */
+@media (max-width: 380px) {
+  .controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+  }
+
+  .detail__name {
+    font-size: 1.4rem;
+  }
+
+  .detail__back {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.64rem;
+  }
+}
+
+/* --- Accesibilidad: menos movimiento --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .hero::after {
+    transform: none;
+  }
+}
