@@ -14,6 +14,7 @@
         <button class="menu-button" id="menu" aria-expanded="false" aria-controls="nav" aria-label="Toggle navigation"><span aria-hidden="true">☰</span><span class="menu-word">Menu</span></button>
         <a class="brand" href="#overview" aria-label="Local PC monitor home"><span class="brand-mark" aria-hidden="true">M</span><span>Local PC <small>MONITOR</small></span></a>
         <div class="topbar-spacer"></div>
+        <div class="refresh-control"><label for="dataMode">Data</label><select id="dataMode" aria-label="Data source"><option value="demo">Demo</option><option value="live">Live</option></select></div>
         <div class="refresh-control"><span class="live-dot" aria-hidden="true"></span><label for="interval">Refresh</label><select id="interval"><option value="5">5 sec</option><option value="10" selected>10 sec</option><option value="30">30 sec</option><option value="60">60 sec</option><option value="0">Manual</option></select></div>
         <button class="refresh-button" id="refresh"><span aria-hidden="true">↻</span> Refresh now</button>
     </header>
@@ -28,7 +29,7 @@
             <a href="#security"><span class="nav-icon">◇</span>Security</a>
             <a href="#hardware"><span class="nav-icon">▦</span>Hardware</a>
             <a href="#errors"><span class="nav-icon">≡</span>Collection log</a>
-            <div class="nav-foot"><span class="local-symbol">⌂</span><span>Private by design<small>Data stays on this device</small></span></div>
+            <div class="nav-foot"><span class="local-symbol">⌂</span><span>Local dashboard<small>Access depends on server settings</small></span></div>
         </nav>
         <main id="main">
             <div class="page-heading"><div><p class="eyebrow">DEVICE STATUS / LOCAL</p><h1>System overview</h1></div><p id="notice" role="status" aria-live="polite">Loading local dashboard data…</p></div>
@@ -39,7 +40,7 @@
             <section id="security" aria-labelledby="security-title"><div class="section-heading"><div><p class="eyebrow">PROTECTION</p><h2 id="security-title">Windows health &amp; security</h2></div></div><div class="cards" id="securityContent"></div></section>
             <section id="hardware" aria-labelledby="hardware-title"><div class="section-heading"><div><p class="eyebrow">COMPONENTS</p><h2 id="hardware-title">Hardware</h2></div></div><div class="cards" id="hardwareContent"></div></section>
             <section id="errors" aria-labelledby="errors-title"><div class="section-heading"><div><p class="eyebrow">DIAGNOSTICS</p><h2 id="errors-title">Collection log</h2></div></div><pre id="errorsContent">No data yet.</pre></section>
-            <details><summary>How the health score works</summary><p>Warnings deduct 8 points; critical states deduct 20. CPU, memory, and storage warn at 80% and are critical at 90%. Unavailable security data is neutral.</p></details>
+            <details><summary>How the health score works</summary><p>Warnings deduct 8 points; critical states deduct 20. CPU, memory, and storage warn at 80% and are critical at 90%. Unavailable security data is neutral and does not hide warnings from available security checks.</p></details>
             <footer>Local PC Monitor <span>System data collected on this device</span></footer>
         </main>
     </div>

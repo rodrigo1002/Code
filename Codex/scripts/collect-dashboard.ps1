@@ -69,7 +69,8 @@ $logicalProcessors = ($processors | Measure-Object NumberOfLogicalProcessors -Su
 $cpuStatus = Get-Status $cpuPercent
 $storageStatus = if ($drives.status -contains 'Critical') { 'Critical' } elseif ($drives.status -contains 'Warning') { 'Warning' } else { 'Normal' }
 $networkStatus = if ($adapters | Where-Object { $_.status -eq 'Up' -and $_.type -ne 'Virtual' }) { 'Normal' } else { 'Warning' }
-$securityStatus = if ($security.Values -contains 'N/A') { 'N/A' } elseif ($security.Values -match 'disabled|not ready|not present') { 'Warning' } else { 'Normal' }
+$availableSecurityValues = @($security.Values | Where-Object { $_ -ne 'N/A' })
+$securityStatus = if ($availableSecurityValues -match 'disabled|not ready|not present') { 'Warning' } elseif ($availableSecurityValues.Count -eq 0) { 'N/A' } else { 'Normal' }
 $deductions = 0; foreach ($status in @($cpuStatus, (Get-Status $memoryPercent), $storageStatus, $networkStatus, $securityStatus)) { if ($status -eq 'Warning') { $deductions += 8 }; if ($status -eq 'Critical') { $deductions += 20 } }
 
 $snapshot = [ordered]@{
@@ -79,7 +80,7 @@ $snapshot = [ordered]@{
     cpu = [ordered]@{ name=(Get-Text $cpuName); physicalCores=$physicalCores; logicalProcessors=$logicalProcessors; usagePercent=$cpuPercent; currentClockMHz=(($processors | Measure-Object CurrentClockSpeed -Average).Average); maxClockMHz=(($processors | Measure-Object MaxClockSpeed -Maximum).Maximum); status=$cpuStatus }
     memory = [ordered]@{ totalGiB=$totalGiB; usedGiB=$usedGiB; availableGiB=$freeGiB; usagePercent=$memoryPercent; status=(Get-Status $memoryPercent) }
     storage = $drives; network = $adapters; security = $security; gpu = $gpus
-    health = [ordered]@{ score=[math]::Max(0, 100 - $deductions); rules='Warnings deduct 8 points; critical states deduct 20. CPU, memory, and storage warn at 80% and are critical at 90%. Security N/A is neutral.'; components=[ordered]@{ cpu=$cpuStatus; memory=(Get-Status $memoryPercent); storage=$storageStatus; network=$networkStatus; security=$securityStatus } }
+    health = [ordered]@{ score=[math]::Max(0, 100 - $deductions); rules='Warnings deduct 8 points; critical states deduct 20. CPU, memory, and storage warn at 80% and are critical at 90%. Security N/A is neutral, while known disabled, not ready, or not present security states remain warnings.'; components=[ordered]@{ cpu=$cpuStatus; memory=(Get-Status $memoryPercent); storage=$storageStatus; network=$networkStatus; security=$securityStatus } }
     errors = $errors
 }
 

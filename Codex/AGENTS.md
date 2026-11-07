@@ -1,32 +1,46 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+## Project Structure
 
-This repository is a local Windows PC monitoring dashboard. `index.html`, `styles.css`, and `app.js` provide the browser interface. `scripts/collect-dashboard.ps1` gathers system data and writes `data/dashboard.json`. `scripts/watch-dashboard.ps1` repeats collection on an interval. `system-info.ps1` is a separate system summary script, and `hello.ps1` is a small example. Keep browser code in the root files and collection logic in `scripts/`.
+This repository contains a local Windows PC monitoring dashboard.
 
-## Build, Test, and Development Commands
+- `index.html`, `styles.css`, and `app.js` implement the browser interface.
+- `scripts/collect-dashboard.ps1` collects system information and writes a JSON snapshot to `data/dashboard.json`.
+- `scripts/watch-dashboard.ps1` runs the collector repeatedly. It accepts intervals of 5, 10, 30, or 60 seconds.
+- `system-info.ps1` prints a separate system summary. `hello.ps1` is a minimal example.
 
-PowerShell 7 or later is required for the collection scripts. Run:
+Keep browser interface code in the root files and recurring dashboard collection logic under `scripts/`.
 
-- `pwsh -File scripts/collect-dashboard.ps1` to collect a snapshot for the current Windows machine.
-- `pwsh -File scripts/watch-dashboard.ps1 -IntervalSeconds 10` to refresh the snapshot repeatedly. Supported intervals are 5, 10, 30, and 60 seconds.
-- `py -m http.server 8000 --bind 127.0.0.1` to serve the dashboard on this machine, then open `http://127.0.0.1:8000`.
-- Update the MEMORY.md file at the end of each task.
+## Development Workflow
 
-There is no configured build step or automated test framework. Check interface changes by serving the page and reviewing each dashboard section. Run the collector on Windows to verify data changes.
+PowerShell 7 or later is required for the collection scripts, which are supported on Windows.
 
-## Coding Style & Naming Conventions
+- Run `pwsh -File scripts/collect-dashboard.ps1` to collect a snapshot.
+- Run `pwsh -File scripts/watch-dashboard.ps1 -IntervalSeconds 10` to collect repeatedly.
+- Serve the repository root locally with `py -m http.server 8000 --bind 127.0.0.1`, then open `http://127.0.0.1:8000`.
 
-Use four spaces for PowerShell indentation and follow the existing verb-noun names for PowerShell functions and scripts. Use descriptive lower camel case for JavaScript variables and functions. Keep HTML semantic and accessible, and use the existing CSS custom properties for shared colors. No formatter or linter configuration is present.
+There is no configured build step, automated test framework, formatter, or linter. For interface changes, manually inspect dashboard sections, refresh behavior, and desktop and narrow layouts. For collector changes, inspect the JSON structure and its `errors` field. Run the collector on Windows when the environment permits it.
 
-## Testing Guidelines
+## Coding Conventions
 
-No test suite or coverage requirement is configured. For collector changes, inspect the generated JSON for valid structure and confirm collection errors appear in its `errors` field. For UI changes, verify refresh behavior and the layout at desktop and narrow viewport widths.
+- Use four spaces for PowerShell indentation and verb-noun names for PowerShell commands and scripts.
+- Use descriptive lower camel case for JavaScript variables and functions.
+- Keep HTML semantic and accessible. Reuse CSS custom properties for shared colors.
+- Follow `CONSTITUTION.md` for project principles and truthful documentation.
 
-## Commit & Pull Request Guidelines
+## Documentation Maintenance
 
-Git metadata is not available in this checkout, so existing commit message conventions cannot be confirmed. Use a short imperative commit subject, such as `Improve dashboard refresh handling`. Pull requests should explain the change, list manual verification performed, link related work when applicable, and include screenshots for visible interface changes.
+At the end of every completed task that changes the project, review `AGENTS.md`, `MEMORY.md`, and `CONSTITUTION.md` against the resulting repository state.
 
-## Security & Configuration
+- Update `MEMORY.md` with durable, verified facts about the task or changed project behavior. Remove or correct notes that no longer match the repository. Do not add unrelated personal machine details.
+- Update `AGENTS.md` when project structure, workflow, conventions, or verification instructions change.
+- Update `CONSTITUTION.md` only when a project principle or governance rule changes. Check that the other documents remain consistent with it.
+- Do not claim a document was updated if no verified change is needed. Keep each document concise and do not duplicate the same detailed content across files.
 
-The collector reads local system and security status and writes it to `data/dashboard.json`. Treat snapshots as machine-specific information. Do not add personal snapshots, credentials, or secrets to commits. The dashboard is designed to read local JSON and does not require a service connection.
+## Data and Security
+
+The collector reads local system and security status and writes it to `data/dashboard.json`. Treat snapshots as machine-specific and potentially sensitive. Do not commit personal snapshots, credentials, or secrets. The dashboard reads local JSON and does not require a service connection.
+
+## Collaboration Notes
+
+No repository test suite or commit convention is configured in this checkout. When proposing a commit subject, use a short imperative phrase. A change description should summarize the change and manual verification, with screenshots for visible interface changes when relevant.
