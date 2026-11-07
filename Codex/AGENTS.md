@@ -7,7 +7,7 @@ This repository contains a local Windows PC monitoring dashboard.
 - `index.html`, `styles.css`, and `app.js` implement the browser interface.
 - `scripts/collect-dashboard.ps1` collects system information and writes a JSON snapshot to `data/dashboard.json`.
 - `scripts/watch-dashboard.ps1` runs the collector repeatedly. It accepts intervals of 5, 10, 30, or 60 seconds.
-- `system-info.ps1` prints a separate system summary. `hello.ps1` is a minimal example.
+- `system-info.ps1` prints a separate system summary.
 
 Keep browser interface code in the root files and recurring dashboard collection logic under `scripts/`.
 
@@ -39,7 +39,7 @@ At the end of every completed task that changes the project, review `AGENTS.md`,
 
 ## Data and Security
 
-The collector reads local system and security status and writes it to `data/dashboard.json`. Treat snapshots as machine-specific and potentially sensitive. Do not commit personal snapshots, credentials, or secrets. The dashboard reads local JSON and does not require a service connection.
+The collector reads local system and security status and writes it to `data/dashboard.json`. Treat snapshots as machine-specific and potentially sensitive. `.gitignore` excludes the default snapshot path while leaving the local file available to the dashboard. Do not force-add personal snapshots, credentials, or secrets. The dashboard reads local JSON and does not require a service connection.
 
 ## Collaboration Notes
 

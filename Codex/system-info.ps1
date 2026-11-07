@@ -87,7 +87,7 @@ else {
     PowerShellVersion       = $PSVersionTable.PSVersion.ToString()
     CPU                     = $cpuInformation
     TotalMemoryGiB          = if ($computerSystem.TotalPhysicalMemory) { [math]::Round($computerSystem.TotalPhysicalMemory / 1GB, 2) } else { 'N/A' }
-    AvailableMemoryGiB      = if ($operatingSystem.FreePhysicalMemory) { [math]::Round($operatingSystem.FreePhysicalMemory / 1MB, 2) } else { 'N/A' }
+    AvailableMemoryGiB      = if ($null -ne $operatingSystem.FreePhysicalMemory) { [math]::Round($operatingSystem.FreePhysicalMemory / 1MB, 2) } else { 'N/A' }
     IPv4Addresses           = if ($ipv4Addresses) { $ipv4Addresses -join '; ' } else { 'N/A' }
     Errors                  = if ($errors.Count) { $errors -join '; ' } else { $null }
 }

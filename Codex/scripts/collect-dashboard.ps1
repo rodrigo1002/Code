@@ -22,7 +22,7 @@ $processors = @(Get-Safely 'CPU' { Get-CimInstance Win32_Processor -ErrorAction 
 $displayVersion = Get-Safely 'System' { (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop).DisplayVersion }
 $runningAccount = Get-Safely 'System' { [System.Security.Principal.WindowsIdentity]::GetCurrent().Name } "$env:USERDOMAIN\$env:USERNAME"
 
-$freeGiB = if ($os.FreePhysicalMemory) { [math]::Round($os.FreePhysicalMemory / 1MB, 2) } else { $null }
+$freeGiB = if ($null -ne $os.FreePhysicalMemory) { [math]::Round($os.FreePhysicalMemory / 1MB, 2) } else { $null }
 $totalGiB = To-GiB $computer.TotalPhysicalMemory
 $usedGiB = if ($null -ne $totalGiB -and $null -ne $freeGiB) { [math]::Round($totalGiB - $freeGiB, 2) } else { $null }
 $memoryPercent = if ($totalGiB -gt 0 -and $null -ne $usedGiB) { [math]::Round(($usedGiB / $totalGiB) * 100, 1) } else { $null }
@@ -59,7 +59,12 @@ $security = [ordered]@{
 }
 
 $gpus = @(Get-Safely 'GPU' {
-    Get-CimInstance Win32_VideoController -ErrorAction Stop | ForEach-Object { $driverDate = if ($_.DriverDate) { ([datetime]$_.DriverDate).ToString('yyyy-MM-dd') } else { 'N/A' }; [ordered]@{ name=(Get-Text $_.Name); adapterMemoryGiB=(To-GiB $_.AdapterRAM); driverVersion=(Get-Text $_.DriverVersion); driverDate=$driverDate } }
+    Get-CimInstance Win32_VideoController -ErrorAction Stop | ForEach-Object {
+        $driverDate = if ($_.DriverDate) { ([datetime]$_.DriverDate).ToString('yyyy-MM-dd') } else { 'N/A' }
+        # AdapterRAM is uint32 and cannot represent values above 4 GiB.
+        $adapterMemoryGiB = if ($null -eq $_.AdapterRAM -or [uint64]$_.AdapterRAM -eq [uint64][uint32]::MaxValue) { $null } else { To-GiB $_.AdapterRAM }
+        [ordered]@{ name=(Get-Text $_.Name); adapterMemoryGiB=$adapterMemoryGiB; driverVersion=(Get-Text $_.DriverVersion); driverDate=$driverDate }
+    }
 } @())
 
 $cpuPercent = if ($processors.Count) { [math]::Round((($processors | Measure-Object LoadPercentage -Average).Average), 1) } else { $null }
@@ -67,8 +72,8 @@ $cpuName = ($processors | ForEach-Object Name | Where-Object { $_ } | Sort-Objec
 $physicalCores = ($processors | Measure-Object NumberOfCores -Sum).Sum
 $logicalProcessors = ($processors | Measure-Object NumberOfLogicalProcessors -Sum).Sum
 $cpuStatus = Get-Status $cpuPercent
-$storageStatus = if ($drives.status -contains 'Critical') { 'Critical' } elseif ($drives.status -contains 'Warning') { 'Warning' } else { 'Normal' }
-$networkStatus = if ($adapters | Where-Object { $_.status -eq 'Up' -and $_.type -ne 'Virtual' }) { 'Normal' } else { 'Warning' }
+$storageStatus = if ($drives.status -contains 'Critical') { 'Critical' } elseif ($drives.status -contains 'Warning') { 'Warning' } elseif (-not $drives.Count -or $drives.status -contains 'N/A') { 'N/A' } else { 'Normal' }
+$networkStatus = if ($errors.Contains('Network')) { 'N/A' } elseif ($adapters | Where-Object { $_.status -eq 'Up' -and $_.type -ne 'Virtual' }) { 'Normal' } else { 'Warning' }
 $availableSecurityValues = @($security.Values | Where-Object { $_ -ne 'N/A' })
 $securityStatus = if ($availableSecurityValues -match 'disabled|not ready|not present') { 'Warning' } elseif ($availableSecurityValues.Count -eq 0) { 'N/A' } else { 'Normal' }
 $deductions = 0; foreach ($status in @($cpuStatus, (Get-Status $memoryPercent), $storageStatus, $networkStatus, $securityStatus)) { if ($status -eq 'Warning') { $deductions += 8 }; if ($status -eq 'Critical') { $deductions += 20 } }
