@@ -114,7 +114,7 @@ const djs = [
 // ficha simplemente no muestra el bloque.
 const djBios = {
   "Carl Cox":
-    "Nacido en Barbados y criado en Brighton, se convirtió en uno de los grandes embajadores del acid house y el techno. Sus sesiones con tres platos y su larga residencia en Ibiza lo consolidaron como referencia mundial de la cabina.",
+    "De familia barbadense y criado en Brighton, se convirtió en uno de los grandes embajadores del acid house y el techno. Sus sesiones con tres platos y su larga residencia en Ibiza lo consolidaron como referencia mundial de la cabina.",
   "Tiësto":
     "El DJ de Breda llevó el trance a los estadios y fue el primero en pinchar en una ceremonia inaugural olímpica, en Atenas 2004. Su serie In Search of Sunrise definió el lado melódico del género.",
   "Armin van Buuren":
@@ -134,7 +134,7 @@ const djBios = {
   "Fatboy Slim":
     "El británico Norman Cook pasó por varios grupos antes de impulsar el big beat con Praise You y Right Here Right Now. Sus fiestas en Brighton fueron el laboratorio del género.",
   "The Chemical Brothers":
-    "El dúo de Manchester formado por Tom Rowland y Ed Simons llevó el big beat a las listas con Block Rockin' Beats. Su directo audiovisual es una referencia del género.",
+    "El dúo de Manchester formado por Tom Rowlands y Ed Simons llevó el big beat a las listas con Block Rockin' Beats. Su directo audiovisual es una referencia del género.",
   "Daft Punk":
     "Thomas Bangalter y Guy-Manuel de Homem-Christo unieron house, disco y pop bajo cascos de robot. Homework y Discovery marcaron a varias generaciones; anunciaron su separación en 2021.",
   Justice:
@@ -280,7 +280,7 @@ const djBios = {
   "Gareth Emery":
     "El británico fundó Garuda y se dio a conocer con Concrete Angel. Su trance melódico combina energía de festival y letras pop.",
   "Giuseppe Ottaviani":
-    "El romano viene del grupo Nu NRG y hoy es una referencia del trance en directo. Combina teclados y producción propia sobre el escenario.",
+    "Nacido en Viterbo, viene del grupo Nu NRG y hoy es una referencia del trance en directo. Combina teclados y producción propia sobre el escenario.",
   "Infected Mushroom":
     "El dúo israelí es la cara más internacional del psytrance. Converting Vegetarians mostró su capacidad para salir del esquema del género.",
   Astrix:
@@ -316,10 +316,11 @@ const djBios = {
 };
 
 // Ubicación documentada de cada DJ, indexada por nombre (nunca por posición).
-// Procedencia en "source": cadena QID/PROP/QID de Wikidata, o "enwiki:Artículo/campo"
-// cuando el dato viene del infobox de Wikipedia, o "ranking:País" cuando solo se
-// pudo verificar el país que ya declara el ranking.
-// "precision": city (ciudad documentada) | country (solo país) | unknown (sin dato).
+// Procedencia en "source": cadena QID/PROP/QID de Wikidata, "enwiki:Artículo/campo"
+// o "simplewiki:Artículo/campo" cuando el dato viene de Wikipedia, o "ranking:País"
+// cuando solo se pudo verificar el país que ya declara el ranking.
+// "precision": city (ciudad documentada); country y unknown quedan previstos para
+// registros sin ciudad verificable, pero hoy los 100 registros tienen ciudad.
 // "basis": birth | formation | activity | citizenship | origin | ranking | none.
 const djGeo = {
   "Carl Cox": { city: "Oldham", country: "Reino Unido", lat: 53.545, lon: -2.118, precision: "city", basis: "birth", source: "Q319719/P19/Q202628" },
@@ -343,7 +344,7 @@ const djGeo = {
   "Kevin Saunderson": { city: "Brooklyn", country: "Estados Unidos", lat: 40.651, lon: -73.95, precision: "city", basis: "birth", source: "Q923090/P19/Q18419" },
   "Frankie Knuckles": { city: "El Bronx", country: "Estados Unidos", lat: 40.847, lon: -73.873, precision: "city", basis: "birth", source: "Q205322/P19/Q18426" },
   "Larry Levan": { city: "Nueva York", country: "Estados Unidos", lat: 40.713, lon: -74.006, precision: "city", basis: "birth", source: "Q1341804/P19/Q60" },
-  "Ron Hardy": { city: null, country: "Estados Unidos", lat: 39.538479, lon: -97.482602, precision: "country", basis: "citizenship", source: "Q1934666/P27/Q30" },
+  "Ron Hardy": { city: "Chicago", country: "Estados Unidos", lat: 41.882, lon: -87.628, precision: "city", basis: "activity", source: "enwiki:Ron_Hardy/activity/Q1297" },
   "Marshall Jefferson": { city: "Chicago", country: "Estados Unidos", lat: 41.882, lon: -87.628, precision: "city", basis: "birth", source: "Q1351604/P19/Q1297" },
   "Larry Heard": { city: "Chicago", country: "Estados Unidos", lat: 41.882, lon: -87.628, precision: "city", basis: "birth", source: "Q1375814/P19/Q1297" },
   "Kerri Chandler": { city: "East Orange", country: "Estados Unidos", lat: 40.766, lon: -74.212, precision: "city", basis: "birth", source: "Q549373/P19/Q988515" },
@@ -356,8 +357,8 @@ const djGeo = {
   "Loco Dice": { city: "Túnez", country: "Túnez", lat: 36.801, lon: 10.18, precision: "city", basis: "birth", source: "Q1867690/P19/Q3572" },
   "Marco Carola": { city: "Nápoles", country: "Italia", lat: 40.836, lon: 14.249, precision: "city", basis: "birth", source: "Q1498245/P19/Q2634" },
   "Jamie Jones": { city: "Bontnewydd", country: "Reino Unido", lat: 53.117, lon: -4.268, precision: "city", basis: "activity", source: "enwiki:Jamie_Jones_(DJ)/origin/Q3396864" },
-  "Michael Bibi": { city: null, country: "Reino Unido", lat: 54.402739, lon: -2.116346, precision: "country", basis: "citizenship", source: "Q115631706/P27/Q145" },
-  "Pawsa": { city: null, country: null, lat: null, lon: null, precision: "unknown", basis: "none", source: null },
+  "Michael Bibi": { city: "Londres", country: "Reino Unido", lat: 51.507, lon: -0.128, precision: "city", basis: "origin", source: "enwiki:Michael_Bibi/grew_up_in/Q84" },
+  "Pawsa": { city: "Londres", country: "Reino Unido", lat: 51.507, lon: -0.128, precision: "city", basis: "origin", source: "enwiki:PAWSA/from/Q84" },
   "Fisher": { city: "Gold Coast", country: "Australia", lat: -28.017, lon: 153.4, precision: "city", basis: "birth", source: "Q59539013/P19/Q140075" },
   "Chris Lake": { city: "Aberdeen", country: "Reino Unido", lat: 57.15, lon: -2.1, precision: "city", basis: "birth", source: "Q958543/P19/Q36405" },
   "Green Velvet": { city: "Chicago", country: "Estados Unidos", lat: 41.882, lon: -87.628, precision: "city", basis: "birth", source: "Q1544666/P19/Q1297" },
@@ -372,7 +373,7 @@ const djGeo = {
   "Stephan Bodzin": { city: "Bremen", country: "Alemania", lat: 53.076, lon: 8.807, precision: "city", basis: "birth", source: "Q75361/P19/Q24879" },
   "Solomun": { city: "Travnik", country: "Bosnia y Herzegovina", lat: 44.225, lon: 17.667, precision: "city", basis: "birth", source: "Q1941178/P19/Q159818" },
   "Dixon": { city: "Anklam", country: "Alemania", lat: 53.85, lon: 13.683, precision: "city", basis: "birth", source: "Q3032635/P19/Q488513" },
-  "Âme": { city: null, country: "Alemania", lat: 50.961733, lon: 9.678348, precision: "country", basis: "origin", source: "Q3577064/P495/Q183" },
+  "Âme": { city: "Karlsruhe", country: "Alemania", lat: 49.007, lon: 8.404, precision: "city", basis: "origin", source: "enwiki:Âme/hometown/Q1040" },
   "Ben Klock": { city: "Schöneberg", country: "Alemania", lat: 52.483, lon: 13.35, precision: "city", basis: "birth", source: "Q816535/P19/Q313189" },
   "Marcel Dettmann": { city: "Pößneck", country: "Alemania", lat: 50.7, lon: 11.6, precision: "city", basis: "birth", source: "Q16574452/P19/Q505185" },
   "Boris Brejcha": { city: "Ludwigshafen", country: "Alemania", lat: 49.481, lon: 8.435, precision: "city", basis: "birth", source: "Q27666713/P19/Q2910" },
@@ -408,8 +409,8 @@ const djGeo = {
   "Giuseppe Ottaviani": { city: "Viterbo", country: "Italia", lat: 42.419, lon: 12.104, precision: "city", basis: "birth", source: "Q954477/P19/Q13395" },
   "Infected Mushroom": { city: "Haifa", country: "Israel", lat: 32.819, lon: 34.999, precision: "city", basis: "formation", source: "Q548994/P740/Q41621" },
   "Astrix": { city: "Tel Aviv", country: "Israel", lat: 32.08, lon: 34.78, precision: "city", basis: "activity", source: "enwiki:Astrix/origin/Q33935" },
-  "Vini Vici": { city: null, country: "Israel", lat: 30.911148, lon: 34.847915, precision: "country", basis: "origin", source: "Q34398202/P495/Q801" },
-  "Ace Ventura": { city: null, country: "Israel", lat: 30.911148, lon: 34.847915, precision: "country", basis: "ranking", source: "ranking:Israel" },
+  "Vini Vici": { city: "Afula", country: "Israel", lat: 32.608, lon: 35.29, precision: "city", basis: "origin", source: "enwiki:Vini_Vici/origin/Q152462" },
+  "Ace Ventura": { city: "Zúrich", country: "Suiza", lat: 47.374, lon: 8.541, precision: "city", basis: "activity", source: "simplewiki:Ace_Ventura_(musician)/lives_in/Q72" },
   "Andy C": { city: "Walsall", country: "Reino Unido", lat: 52.58, lon: -1.98, precision: "city", basis: "birth", source: "Q387288/P19/Q504530" },
   "Goldie": { city: "Walsall", country: "Reino Unido", lat: 52.58, lon: -1.98, precision: "city", basis: "birth", source: "Q507845/P19/Q504530" },
   "Noisia": { city: "Groninga", country: "Países Bajos", lat: 53.219, lon: 6.567, precision: "city", basis: "formation", source: "Q47227/P740/Q749" },
@@ -507,6 +508,11 @@ function countBy(items, field) {
 // Porcentaje con un decimal y coma decimal española.
 function formatPercent(count, total) {
   return `${((count / total) * 100).toFixed(1).replace(".", ",")} %`;
+}
+
+// "1 DJ" / "2 DJs": un solo artista no lleva plural.
+function djUnit(count) {
+  return count === 1 ? "DJ" : "DJs";
 }
 
 // Rellena un desplegable con los valores recibidos, sin duplicados.
@@ -663,7 +669,7 @@ function createBar(label, count, total) {
     <li class="bar">
       <div class="bar__head">
         <span class="bar__label">${escapeHTML(label)}</span>
-        <span class="bar__value">${count} DJs · ${formatPercent(count, total)}</span>
+        <span class="bar__value">${count} ${djUnit(count)} · ${formatPercent(count, total)}</span>
       </div>
       <div class="bar__track">
         <span class="bar__fill" style="width: ${percent.toFixed(2)}%"></span>
@@ -734,7 +740,7 @@ function renderStats() {
 
   if (topGenre) {
     statTopGenre.textContent = topGenre[0];
-    statTopGenreHint.textContent = `${topGenre[1]} DJs · ${formatPercent(
+    statTopGenreHint.textContent = `${topGenre[1]} ${djUnit(topGenre[1])} · ${formatPercent(
       topGenre[1],
       djs.length
     )}`;
@@ -900,8 +906,6 @@ const MAP_K_MAX = 6;
 
 const mapSearchInput = document.getElementById("mapSearch");
 const mapCountrySelect = document.getElementById("mapCountry");
-const mapCityOnlyToggle = document.getElementById("mapCityOnly");
-const mapResetButton = document.getElementById("mapReset");
 const mapSvg = document.getElementById("mapSvg");
 const mapGraticule = document.getElementById("mapGraticule");
 const mapWorld = document.getElementById("mapWorld");
@@ -911,7 +915,6 @@ const mapZoomOutButton = document.getElementById("mapZoomOut");
 const mapPanel = document.getElementById("mapPanel");
 const mapSummary = document.getElementById("mapSummary");
 const mapLive = document.getElementById("mapLive");
-const mapUnknownList = document.getElementById("mapUnknown");
 const mapCountryList = document.getElementById("mapCountries");
 
 // Estado del mapa. Es independiente del estado de los filtros del listado.
@@ -921,8 +924,12 @@ let mapTY = 0;
 let mapSelected = null;
 let mapQuery = "";
 let mapCountry = "all";
-let mapCityOnly = false;
 let mapFocusIdx = 0;
+
+// Contenido actual del panel lateral. Sirve para invalidarlo cuando el zoom,
+// los filtros o la agrupación dejan de corresponder con lo que muestra.
+let mapPanelKind = "default"; // "default" | "dj" | "cluster"
+let mapPanelClusterKey = "";
 
 // Datos de los elementos que están ahora mismo en #mapMarkers, en el mismo
 // orden que el DOM: permite resolver clics y teclado sin atributos extra.
@@ -930,7 +937,7 @@ let mapItemData = [];
 
 const mapRound = (value) => Math.round(value * 100) / 100;
 
-// DJs que pasan los filtros del mapa (nombre, país del marcador y ciudad).
+// DJs que pasan los filtros del mapa (nombre y país del marcador).
 function mapFilteredDjs() {
   const tokens = searchTokens(mapQuery);
 
@@ -941,61 +948,55 @@ function mapFilteredDjs() {
     const searchable = normalize(dj.name);
     const matchesName = tokens.every((token) => searchable.includes(token));
     const matchesCountry = mapCountry === "all" || geo.country === mapCountry;
-    const matchesCity = !mapCityOnly || geo.precision === "city";
 
-    return matchesName && matchesCountry && matchesCity;
+    return matchesName && matchesCountry;
   });
-}
-
-// Etiqueta de la base del dato, tal como se lee en el panel.
-function mapBasisLabel(geo) {
-  if (geo.precision === "country") {
-    return geo.basis === "ranking" ? "País del ranking" : "Solo país";
-  }
-  if (geo.basis === "birth") return "Ciudad de nacimiento";
-  if (geo.basis === "formation") return "Ciudad de formación";
-  if (geo.basis === "activity") return "Ciudad de actividad";
-  if (geo.basis === "origin") return "Ciudad de origen";
-  return "Ciudad documentada";
 }
 
 // Lugar con el que se nombra un grupo: solo se nombra si ese lugar es común a
 // TODO el grupo. Una celda puede mezclar ciudades distintas y nombrar solo la
 // más repetida afirmaría un hecho falso; en ese caso no hay lugar (null).
 function mapClusterPlace(points) {
-  const cities = new Set();
-  const countries = new Set();
-  let missingCity = false;
-
-  points.forEach((point) => {
-    if (point.geo.city) cities.add(point.geo.city);
-    else missingCity = true;
-    countries.add(point.geo.country);
-  });
-
-  // Ningún DJ del grupo tiene ciudad: el país, solo si es el mismo para todos.
-  if (cities.size === 0) {
-    return countries.size === 1 ? [...countries][0] : null;
-  }
-
-  // Todas las ciudades coinciden y nadie queda sin ciudad.
-  if (!missingCity && cities.size === 1) return [...cities][0];
-
-  return null;
+  const cities = new Set(points.map((point) => point.geo.city));
+  return cities.size === 1 ? [...cities][0] : null;
 }
 
-function mapMarkerHTML(point, tabIndex) {
+// Firma estable de un grupo: sus puestos ordenados. Permite saber si el panel
+// abierto sigue correspondiendo a un grupo real tras cambiar zoom o filtros.
+function mapClusterKey(points) {
+  return points
+    .map((point) => point.dj.position)
+    .sort((a, b) => a - b)
+    .join(",");
+}
+
+// Escala del SVG en píxeles CSS por unidad del viewBox. Las formas se
+// dimensionan con ella para que el objetivo táctil nunca baje de 24 px y el
+// número de los grupos se lea siempre a 10 px reales.
+function mapMetrics() {
+  const width = mapSvg.getBoundingClientRect().width;
+  const scale = width > 0 ? width / MAP_W : 1;
+
+  return {
+    hit: Math.max(12, 12 / scale),
+    dot: Math.max(4.5, 4 / scale),
+    halo: Math.max(9, 8 / scale),
+    cluster: Math.max(10, 8 / scale),
+    text: 10 / scale,
+  };
+}
+
+function mapMarkerHTML(point, tabIndex, metrics) {
   const dj = point.dj;
   const geo = point.geo;
   const place = geo.city ? `${geo.city}, ${geo.country}` : geo.country;
   const label = `${dj.name}, puesto ${dj.position}, ${place}`;
   const selected = mapSelected === dj.position;
-  const shape =
-    geo.precision === "city"
-      ? '<circle class="map__dot" cx="0" cy="0" r="4.5"></circle>'
-      : '<circle class="map__ring" cx="0" cy="0" r="5"></circle>';
+  const shape = `<circle class="map__dot" cx="0" cy="0" r="${mapRound(
+    metrics.dot
+  )}"></circle>`;
   const halo = selected
-    ? '<circle class="map__halo" cx="0" cy="0" r="9"></circle>'
+    ? `<circle class="map__halo" cx="0" cy="0" r="${mapRound(metrics.halo)}"></circle>`
     : "";
 
   return (
@@ -1003,13 +1004,14 @@ function mapMarkerHTML(point, tabIndex) {
     ` data-position="${dj.position}" role="button" tabindex="${tabIndex}"` +
     ` aria-label="${escapeHTML(label)}"` +
     ` transform="translate(${mapRound(point.x)} ${mapRound(point.y)})">` +
+    `<circle class="map__hit" cx="0" cy="0" r="${mapRound(metrics.hit)}"></circle>` +
     halo +
     shape +
     "</g>"
   );
 }
 
-function mapClusterHTML(item, tabIndex) {
+function mapClusterHTML(item, tabIndex, metrics) {
   const count = item.points.length;
   const place = mapClusterPlace(item.points);
   const label = place
@@ -1020,8 +1022,9 @@ function mapClusterHTML(item, tabIndex) {
     `<g class="map__cluster" data-cluster="1" role="button" tabindex="${tabIndex}"` +
     ` aria-label="${escapeHTML(label)}"` +
     ` transform="translate(${mapRound(item.x)} ${mapRound(item.y)})">` +
-    '<circle class="map__cluster-dot" cx="0" cy="0" r="10"></circle>' +
-    `<text class="map__cluster-count" x="0" y="0">${count}</text>` +
+    `<circle class="map__hit" cx="0" cy="0" r="${mapRound(metrics.hit)}"></circle>` +
+    `<circle class="map__cluster-dot" cx="0" cy="0" r="${mapRound(metrics.cluster)}"></circle>` +
+    `<text class="map__cluster-count" x="0" y="0" style="font-size: ${mapRound(metrics.text)}px">${count}</text>` +
     "</g>"
   );
 }
@@ -1093,6 +1096,8 @@ function renderMapGraticule() {
 }
 
 function renderMapPanelDefault() {
+  mapPanelKind = "default";
+  mapPanelClusterKey = "";
   mapPanel.innerHTML =
     '<p class="map__panel-hint">Selecciona un marcador para ver la ficha del DJ.</p>';
 }
@@ -1103,6 +1108,9 @@ function renderMapPanelDj(dj) {
     renderMapPanelDefault();
     return;
   }
+
+  mapPanelKind = "dj";
+  mapPanelClusterKey = "";
 
   const place = geo.city ? `${geo.city}, ${geo.country}` : geo.country;
   const differentCountry =
@@ -1116,8 +1124,12 @@ function renderMapPanelDj(dj) {
     '<dl class="map__panel-facts">' +
     '<div class="map__panel-row"><dt class="map__panel-label">Ubicación</dt>' +
     `<dd class="map__panel-value">${escapeHTML(place)}</dd></div>` +
-    '<div class="map__panel-row"><dt class="map__panel-label">Base</dt>' +
-    `<dd class="map__panel-value">${escapeHTML(mapBasisLabel(geo))}</dd></div>` +
+    '<div class="map__panel-row"><dt class="map__panel-label">Género</dt>' +
+    `<dd class="map__panel-value">${escapeHTML(dj.genre)}</dd></div>` +
+    (Number.isInteger(dj.debutYear)
+      ? '<div class="map__panel-row"><dt class="map__panel-label">Debut</dt>' +
+        `<dd class="map__panel-value">${dj.debutYear}</dd></div>`
+      : "") +
     "</dl>" +
     differentCountry +
     `<button class="map__panel-open" type="button" data-position="${dj.position}">Abrir ficha</button>`;
@@ -1126,6 +1138,9 @@ function renderMapPanelDj(dj) {
 function renderMapPanelCluster(item) {
   const count = item.points.length;
   const place = mapClusterPlace(item.points);
+
+  mapPanelKind = "cluster";
+  mapPanelClusterKey = mapClusterKey(item.points);
 
   const buttons = item.points
     .slice()
@@ -1156,27 +1171,18 @@ function renderMapPanelCluster(item) {
 }
 
 function updateMapSummary(filtered) {
-  let withCity = 0;
-  let countryOnly = 0;
-  let unknown = 0;
-
-  filtered.forEach((dj) => {
-    const geo = djGeo[dj.name];
-    if (!geo) return;
-    if (geo.precision === "city") withCity += 1;
-    else if (geo.precision === "country") countryOnly += 1;
-    else unknown += 1;
-  });
-
-  const hasFilters =
-    searchTokens(mapQuery).length > 0 || mapCountry !== "all" || mapCityOnly;
+  const hasFilters = searchTokens(mapQuery).length > 0 || mapCountry !== "all";
   const prefix = hasFilters
     ? `Mostrando ${filtered.length} de ${djs.length} · `
     : "";
 
-  mapSummary.textContent =
-    `${prefix}${withCity} con ciudad · ${countryOnly} solo país · ` +
-    `${unknown} sin ubicación`;
+  const summary =
+    `${prefix}${filtered.length} ${djUnit(filtered.length)} ` +
+    "con ciudad documentada";
+
+  // Se evita reescribir el mismo texto en cada repintado del arrastre para no
+  // disparar anuncios repetidos en el lector de pantalla.
+  if (mapSummary.textContent !== summary) mapSummary.textContent = summary;
 }
 
 function renderMap() {
@@ -1185,7 +1191,7 @@ function renderMap() {
 
   filtered.forEach((dj) => {
     const geo = djGeo[dj.name];
-    if (!geo || geo.precision === "unknown") return;
+    if (!geo) return;
     if (typeof geo.lat !== "number" || typeof geo.lon !== "number") return;
 
     points.push({
@@ -1238,8 +1244,19 @@ function renderMap() {
     !filtered.some((dj) => dj.position === mapSelected)
   ) {
     mapSelected = null;
-    renderMapPanelDefault();
+    if (mapPanelKind === "dj") renderMapPanelDefault();
   }
+
+  // El panel de un grupo deja de ser válido si el zoom o los filtros lo
+  // deshacen: nunca debe listar DJs que ya no forman ese grupo.
+  if (mapPanelKind === "cluster") {
+    const currentCluster = clusters.find(
+      (item) => mapClusterKey(item.points) === mapPanelClusterKey
+    );
+    if (!currentCluster) renderMapPanelDefault();
+  }
+
+  const metrics = mapMetrics();
 
   // Si el foco estaba dentro del mapa, se conserva: primero el mismo marcador
   // (por puesto) y, si era un grupo, la misma posición de la lista.
@@ -1258,8 +1275,8 @@ function renderMap() {
     .map((item, index) => {
       const tabIndex = index === mapFocusIdx ? 0 : -1;
       return item.kind === "cluster"
-        ? mapClusterHTML(item, tabIndex)
-        : mapMarkerHTML(item.points[0], tabIndex);
+        ? mapClusterHTML(item, tabIndex, metrics)
+        : mapMarkerHTML(item.points[0], tabIndex, metrics);
     })
     .join("");
 
@@ -1286,6 +1303,7 @@ function renderMap() {
     "transform",
     `translate(${mapRound(mapTX)} ${mapRound(mapTY)}) scale(${mapRound(mapK)})`
   );
+  mapSvg.classList.toggle("is-zoomed", mapK > MAP_K_MIN);
   renderMapGraticule();
   updateMapSummary(filtered);
 }
@@ -1323,10 +1341,25 @@ function zoomMapAtCenter(factor) {
   zoomMapAtPoint(MAP_W / 2, MAP_H / 2, factor);
 }
 
-// Selecciona un DJ: anillo, panel y foco. Devuelve el marcador ya repintado.
-function selectMapDj(position) {
+// Selecciona un DJ visible: anillo, panel y, si se pide, foco. La búsqueda
+// llama con `focus: false` para no robar el foco mientras se escribe.
+// Devuelve el marcador ya repintado, o null si el DJ está dentro de un grupo.
+function selectMapDj(position, { focus = true } = {}) {
   const dj = djs.find((d) => d.position === position);
   if (!dj) return null;
+
+  // Solo se puede seleccionar lo que el mapa está mostrando: ni DJs filtrados
+  // fuera ni registros sin coordenadas.
+  const visible = mapFilteredDjs().some((item) => {
+    if (item.position !== position) return false;
+    const geo = djGeo[item.name];
+    return (
+      geo &&
+      typeof geo.lat === "number" &&
+      typeof geo.lon === "number"
+    );
+  });
+  if (!visible) return null;
 
   mapSelected = position;
   renderMap();
@@ -1335,15 +1368,35 @@ function selectMapDj(position) {
   const marker = mapMarkers.querySelector(
     `.map__marker[data-position="${position}"]`
   );
-  if (marker) focusMapItem(marker);
+
+  if (focus) {
+    if (marker) {
+      focusMapItem(marker);
+    } else {
+      // El DJ está dentro de un grupo: el foco va al panel recién pintado en
+      // lugar de caer en <body> y perder la posición.
+      const openButton = mapPanel.querySelector(".map__panel-open");
+      (openButton || mapPanel).focus();
+    }
+  }
 
   const geo = djGeo[dj.name];
   const place = geo && geo.city ? `${geo.city}, ${geo.country}` : geo ? geo.country : "";
-  mapLive.textContent =
+  const message =
     `Seleccionado ${dj.name}, puesto ${dj.position}` +
     (place ? `, ${place}` : "");
+  if (mapLive.textContent !== message) mapLive.textContent = message;
 
   return marker;
+}
+
+// Abre la lista de un grupo: retira cualquier selección anterior, mantiene el
+// foco en el grupo y refresca el panel.
+function activateMapCluster(element, item) {
+  mapSelected = null;
+  focusMapItem(element);
+  renderMap();
+  renderMapPanelCluster(item);
 }
 
 // Centra el mapa en un DJ con una escala cómoda para leer el entorno.
@@ -1376,19 +1429,8 @@ function fillMapCountryOptions() {
   mapCountrySelect.value = "all";
 }
 
-// Los dos paneles plegables se rellenan una sola vez, no en cada repintado.
+// El panel plegable de países se rellena una sola vez, no en cada repintado.
 function renderMapLists() {
-  const unknownDjs = djs.filter(
-    (dj) => djGeo[dj.name] && djGeo[dj.name].precision === "unknown"
-  );
-
-  mapUnknownList.innerHTML = unknownDjs
-    .map(
-      (dj) =>
-        `<li>${escapeHTML(dj.name)} — ${escapeHTML(dj.country)} (ranking)</li>`
-    )
-    .join("");
-
   mapCountryList.innerHTML = countBy(Object.values(djGeo), "country")
     .map(
       ([country, count]) =>
@@ -1407,38 +1449,17 @@ mapSearchInput.addEventListener("input", () => {
   // Una sola coincidencia: se centra y se selecciona.
   if (searchTokens(mapQuery).length === 0) return;
 
-  const visible = mapFilteredDjs().filter(
-    (dj) => djGeo[dj.name].precision !== "unknown"
-  );
+  const visible = mapFilteredDjs();
 
   if (visible.length === 1) {
     centerMapOnDj(visible[0]);
-    selectMapDj(visible[0].position);
+    // Sin foco: el usuario sigue escribiendo en el buscador.
+    selectMapDj(visible[0].position, { focus: false });
   }
 });
 
 mapCountrySelect.addEventListener("change", () => {
   mapCountry = mapCountrySelect.value;
-  renderMap();
-});
-
-mapCityOnlyToggle.addEventListener("change", () => {
-  mapCityOnly = mapCityOnlyToggle.checked;
-  renderMap();
-});
-
-mapResetButton.addEventListener("click", () => {
-  mapQuery = "";
-  mapCountry = "all";
-  mapCityOnly = false;
-  mapK = 1;
-  mapTX = 0;
-  mapTY = 0;
-
-  mapSearchInput.value = "";
-  mapCountrySelect.value = "all";
-  mapCityOnlyToggle.checked = false;
-
   renderMap();
 });
 
@@ -1456,8 +1477,7 @@ mapMarkers.addEventListener("click", (event) => {
   if (!item) return;
 
   if (item.kind === "cluster") {
-    focusMapItem(element);
-    renderMapPanelCluster(item);
+    activateMapCluster(element, item);
     return;
   }
 
@@ -1481,10 +1501,17 @@ mapPanel.addEventListener("click", (event) => {
   if (djButton) selectMapDj(Number(djButton.dataset.position));
 });
 
-// Rueda: zoom hacia el cursor.
+// Rueda: zoom hacia el cursor. En los límites (y con Ctrl para el zoom del
+// navegador) no se intercepta: la página vuelve a desplazarse con normalidad.
 mapSvg.addEventListener(
   "wheel",
   (event) => {
+    if (event.ctrlKey) return;
+
+    const factor = Math.exp(-event.deltaY * 0.0015);
+    const nextK = Math.min(MAP_K_MAX, Math.max(MAP_K_MIN, mapK * factor));
+    if (nextK === mapK) return;
+
     event.preventDefault();
 
     const rect = mapSvg.getBoundingClientRect();
@@ -1493,15 +1520,28 @@ mapSvg.addEventListener(
     const viewX = ((event.clientX - rect.left) / rect.width) * MAP_W;
     const viewY = ((event.clientY - rect.top) / rect.height) * MAP_H;
 
-    zoomMapAtPoint(viewX, viewY, Math.exp(-event.deltaY * 0.0015));
+    zoomMapAtPoint(viewX, viewY, factor);
   },
   { passive: false }
 );
 
-// Arrastre con puntero. En k = 1 la traslación es 0, así que no hay deriva.
+// Los repintados de arrastre y de cambio de ancho se agrupan en un frame.
+let mapRenderFrame = 0;
+
+function scheduleMapRender() {
+  if (mapRenderFrame) return;
+  mapRenderFrame = requestAnimationFrame(() => {
+    mapRenderFrame = 0;
+    renderMap();
+  });
+}
+
+// Arrastre con puntero. En k = 1 la traslación es 0: no se captura el gesto,
+// así que la página conserva su desplazamiento normal.
 let mapDrag = null;
 
 mapSvg.addEventListener("pointerdown", (event) => {
+  if (mapK === MAP_K_MIN) return;
   if (event.pointerType === "mouse" && event.button !== 0) return;
   if (event.target.closest(".map__marker, .map__cluster")) return;
 
@@ -1531,7 +1571,7 @@ mapSvg.addEventListener("pointermove", (event) => {
   mapTX = mapDrag.tx + dx;
   mapTY = mapDrag.ty + dy;
   clampMap();
-  renderMap();
+  scheduleMapRender();
 });
 
 function endMapDrag(event) {
@@ -1548,6 +1588,10 @@ function endMapDrag(event) {
 
 mapSvg.addEventListener("pointerup", endMapDrag);
 mapSvg.addEventListener("pointercancel", endMapDrag);
+
+// Al cambiar el ancho del SVG se recalculan el área de captura y el tamaño
+// real del texto de los grupos.
+window.addEventListener("resize", scheduleMapRender);
 
 // Teclado: flechas para recorrer marcadores, Enter/Espacio para abrir la ficha
 // y + / − para el zoom.
@@ -1590,11 +1634,7 @@ mapSvg.addEventListener("keydown", (event) => {
     if (!data) return;
 
     if (data.kind === "cluster") {
-      renderMapPanelCluster(data);
-      const place = mapClusterPlace(data.points);
-      mapLive.textContent = place
-        ? `${data.points.length} DJs en ${place}`
-        : `${data.points.length} DJs agrupados en esta zona`;
+      activateMapCluster(item, data);
       return;
     }
 
@@ -1609,3 +1649,58 @@ fillMapCountryOptions();
 renderMapLists();
 renderMapPanelDefault();
 renderMap();
+
+// --- Retícula de fondo en parallax ---
+// La trama repite cada 72 px, así que basta con desplazarla dentro de ese
+// ciclo: la deriva parece continua sin capas gigantes ni repintados. El
+// transform lo escribe este módulo, no una animación CSS, de modo que la
+// preferencia de movimiento reducido se consulta aquí de forma explícita.
+const backdropLayer = document.querySelector(".backdrop");
+const backdropReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+);
+const BACKDROP_STEP = 72;
+const BACKDROP_RATE = 0.18;
+
+let backdropFrame = 0;
+
+function paintBackdrop() {
+  backdropFrame = 0;
+  if (!backdropLayer) return;
+
+  const offset = (window.scrollY * BACKDROP_RATE) % BACKDROP_STEP;
+  backdropLayer.style.transform = `translate3d(0, ${(-offset).toFixed(
+    2
+  )}px, 0)`;
+}
+
+function scheduleBackdropPaint() {
+  if (backdropFrame) return;
+  backdropFrame = requestAnimationFrame(paintBackdrop);
+}
+
+function syncBackdropMotion() {
+  if (!backdropLayer) return;
+
+  if (backdropReducedMotion.matches) {
+    window.removeEventListener("scroll", scheduleBackdropPaint);
+    if (backdropFrame) {
+      cancelAnimationFrame(backdropFrame);
+      backdropFrame = 0;
+    }
+    backdropLayer.style.transform = "";
+    return;
+  }
+
+  window.addEventListener("scroll", scheduleBackdropPaint, { passive: true });
+  paintBackdrop();
+}
+
+syncBackdropMotion();
+
+if (typeof backdropReducedMotion.addEventListener === "function") {
+  backdropReducedMotion.addEventListener("change", syncBackdropMotion);
+} else if (typeof backdropReducedMotion.addListener === "function") {
+  // Safari antiguo: MediaQueryList solo tiene addListener.
+  backdropReducedMotion.addListener(syncBackdropMotion);
+}

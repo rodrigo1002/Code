@@ -77,6 +77,27 @@ body {
   outline-offset: 3px;
 }
 
+/* --- Retícula de fondo --- */
+/* Trama de papel de dibujo en toda la página: textura, no resplandor. Vive
+   detrás de todo y no captura punteros. El patrón repite cada 72 px, así que
+   app.js solo la desplaza dentro de ese ciclo: nunca necesita ser más alta que
+   el viewport ni repintarse. */
+.backdrop {
+  position: fixed;
+  inset: -72px 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to right,
+      var(--line-soft) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.4;
+  will-change: transform;
+}
+
 /* --- Encabezado --- */
 /* Cabecera a dos columnas: el título manda a la izquierda, la entradilla
    se apoya en su línea base a la derecha. */
@@ -90,20 +111,6 @@ body {
   max-width: var(--col);
   margin: 0 auto;
   padding: clamp(3.5rem, 9vw, 6.5rem) var(--pad) clamp(1.75rem, 3.5vw, 2.5rem);
-}
-
-/* Retícula tenue de papel de dibujo: textura, no resplandor. */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
-  background-size: 72px 72px;
-  opacity: 0.55;
-  -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
-  mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
-  pointer-events: none;
 }
 
 /* Regla inferior que se traza una sola vez al cargar. */
@@ -911,26 +918,6 @@ html.detail-open {
   flex: 0 1 210px;
 }
 
-/* Casilla de verificación: área táctil de 24 px sin caja nueva. */
-.map__check {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-height: 24px;
-  padding-bottom: 0.45rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--ash);
-  cursor: pointer;
-}
-
-.map__check input {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-}
-
 .map__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -949,6 +936,13 @@ html.detail-open {
   width: 100%;
   height: auto;
   aspect-ratio: 2 / 1;
+  /* A escala 1 el mapa no se desplaza: el gesto vertical sigue siendo scroll
+     de la página. Al hacer zoom se captura el puntero en ambos ejes. */
+  cursor: default;
+  touch-action: pan-y pinch-zoom;
+}
+
+.map__svg.is-zoomed {
   cursor: grab;
   touch-action: none;
 }
@@ -979,12 +973,6 @@ html.detail-open {
   stroke-width: 1;
 }
 
-.map__ring {
-  fill: none;
-  stroke: var(--ash);
-  stroke-width: 1.2;
-}
-
 /* Halo del marcador seleccionado: el único uso del acento en el mapa. */
 .map__halo {
   fill: none;
@@ -997,14 +985,18 @@ html.detail-open {
   cursor: pointer;
 }
 
-/* Un <g> sin relleno no recibe clics: el área la aportan sus formas. */
+/* Un <g> sin relleno no recibe clics: el área la aportan sus formas. El círculo
+   .map__hit se dimensiona desde JS para garantizar 24 px de objetivo táctil. */
 .map__marker > *,
 .map__cluster > * {
   pointer-events: all;
 }
 
-.map__marker.is-selected .map__dot,
-.map__marker.is-selected .map__ring {
+.map__hit {
+  fill: transparent;
+}
+
+.map__marker.is-selected .map__dot {
   stroke: var(--spot);
   stroke-width: 2;
 }
@@ -1012,7 +1004,6 @@ html.detail-open {
 /* Refuerzo del foco de teclado, como el subrayado de los campos: el anillo
    exterior sigue siendo el global, no se anula el outline. */
 .map__marker:focus-visible .map__dot,
-.map__marker:focus-visible .map__ring,
 .map__cluster:focus-visible .map__cluster-dot {
   stroke: var(--spot);
   stroke-width: 2;
@@ -1027,7 +1018,6 @@ html.detail-open {
 .map__cluster-count {
   fill: var(--chalk);
   font-family: var(--font-mono);
-  font-size: 10px;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
@@ -1211,24 +1201,6 @@ html.detail-open {
   inset: 1px;
   background: var(--chalk);
   clip-path: circle(50% at 50% 50%);
-}
-
-.map__key--country::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border: 1px solid var(--ash);
-  clip-path: circle(50% at 50% 50%);
-}
-
-.map__key--unknown::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: var(--ash-dim);
 }
 
 .map__summary {
@@ -1415,10 +1387,6 @@ html.detail-open {
   .map__controls .field:first-child,
   .map__controls .field:nth-child(2) {
     flex: 1 1 auto;
-  }
-
-  .map__check {
-    padding-bottom: 0;
   }
 
   .map__legend {

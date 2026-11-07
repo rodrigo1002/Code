@@ -9,6 +9,9 @@
   <script src="app.js" defer></script>
 </head>
 <body>
+  <!-- Retícula de fondo: decorativa, detrás de todo y sin capturar punteros. -->
+  <div class="backdrop" aria-hidden="true"></div>
+
   <!-- Encabezado principal -->
   <header class="hero">
     <h1 class="hero__title">
@@ -188,8 +191,9 @@
     <section class="map" aria-labelledby="mapTitle">
       <h2 class="section__title" id="mapTitle">El mapa global de la música electrónica</h2>
       <p class="section__note">
-        Ubicación documentada de cada artista. El país del mapa es el del lugar de
-        nacimiento o formación y puede no coincidir con el país del ranking.
+        Los 100 artistas tienen una ciudad documentada. El país del mapa es el
+        del lugar documentado —nacimiento, formación, actividad u origen— y
+        puede no coincidir con el país del ranking.
         Cartografía: Natural Earth (dominio público).
       </p>
 
@@ -202,11 +206,6 @@
           <label class="field__label" for="mapCountry">País del marcador</label>
           <select class="field__select field__input" id="mapCountry"></select>
         </div>
-        <label class="map__check" for="mapCityOnly">
-          <input id="mapCityOnly" type="checkbox" />
-          <span>Solo ciudad verificada</span>
-        </label>
-        <button class="btn-reset" id="mapReset" type="button">Centrar mapa</button>
       </div>
 
       <div class="map__layout">
@@ -224,26 +223,17 @@
             <button class="map__zoom-btn" id="mapZoomOut" type="button" aria-label="Alejar el mapa">−</button>
           </div>
         </div>
-        <aside class="map__panel" id="mapPanel" aria-label="Detalle del DJ seleccionado"></aside>
+        <aside class="map__panel" id="mapPanel" aria-label="Detalle del mapa" tabindex="-1"></aside>
       </div>
 
       <ul class="map__legend">
-        <li><span class="map__key map__key--city" aria-hidden="true"></span> Ciudad verificada</li>
-        <li><span class="map__key map__key--country" aria-hidden="true"></span> Solo país</li>
-        <li><span class="map__key map__key--unknown" aria-hidden="true"></span> Sin ubicación</li>
+        <li><span class="map__key map__key--city" aria-hidden="true"></span> Ciudad documentada</li>
       </ul>
 
-      <p class="map__summary" id="mapSummary"></p>
+      <p class="map__summary" id="mapSummary" aria-live="polite"></p>
       <p class="sr-only" aria-live="polite" id="mapLive"></p>
 
       <div class="map__panels">
-        <details class="panel">
-          <summary class="panel__title">
-            <span class="panel__mark" aria-hidden="true"></span>
-            <span class="panel__heading">Sin ubicación verificada</span>
-          </summary>
-          <ul class="map__list" id="mapUnknown"></ul>
-        </details>
         <details class="panel">
           <summary class="panel__title">
             <span class="panel__mark" aria-hidden="true"></span>

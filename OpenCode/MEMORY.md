@@ -34,7 +34,7 @@ La versión actual incluye:
 16. Un diseño responsive para ordenadores, tablets y móviles.
 17. Una ficha individual por DJ, en diálogo nativo, con foto en color, posición, país, género, año de inicio (solo si está documentado), una línea de contexto con recuentos sobre los 100 DJs y una reseña editorial.
 18. Una sección de metodología («Cómo se construyó este ranking») con las cinco dimensiones cualitativas y la declaración de naturaleza editorial.
-19. Una sección «El mapa global de la música electrónica»: mapa mundial SVG con la ubicación documentada de los 100 DJs, panel lateral de detalle, buscador propio, filtro por país del marcador, casilla «Solo ciudad verificada» y dos paneles plegables (sin ubicación y recuento por país).
+19. Una sección «El mapa global de la música electrónica»: mapa mundial SVG con la ubicación documentada de los 100 DJs, panel lateral de detalle, buscador propio, filtro por país del marcador y un panel plegable con el recuento por país.
 
 No incorporar funcionalidades adicionales sin autorización.
 
@@ -46,7 +46,7 @@ No incorporar funcionalidades adicionales sin autorización.
 4. Sección de estadísticas: resumen en cuatro celdas y dos paneles plegables (`<details>`).
 5. Metodología: «Cómo se construyó este ranking», cinco dimensiones cualitativas en `<dl>` y la declaración de versión editorial.
 6. Listado de fichas.
-7. Mapa global: título, nota, controles propios, mapa con panel lateral, leyenda, resumen, dos paneles plegables.
+7. Mapa global: título, nota, controles propios, mapa con panel lateral, leyenda, resumen y un panel plegable de países.
 
 Los controles van **antes** del dashboard a propósito: con 100 fichas la página es larga y el usuario debe poder filtrar sin recorrerla entera.
 
@@ -71,16 +71,24 @@ Los controles van **antes** del dashboard a propósito: con 100 fichas la págin
 
 La sección «El mapa global de la música electrónica» es un sistema **independiente** del listado:
 
-- **No comparte estado con los filtros superiores.** No llama a `render()` y no toca `#djGrid`, `#resultsInfo` ni los controles de buscador/género/país. Lee `djs` (puesto y país del ranking) y `djGeo` (ubicación documentada); su estado vive en `mapK`, `mapTX`, `mapTY`, `mapSelected`, `mapQuery`, `mapCountry`, `mapCityOnly` y `mapFocusIdx`.
+- **No comparte estado con los filtros superiores.** No llama a `render()` y no toca `#djGrid`, `#resultsInfo` ni los controles de buscador/género/país. Lee `djs` (puesto y país del ranking) y `djGeo` (ubicación documentada); su estado vive en `mapK`, `mapTX`, `mapTY`, `mapSelected`, `mapQuery`, `mapCountry`, `mapFocusIdx`, `mapPanelKind` y `mapPanelClusterKey`.
 - **Proyección Miller** sobre un lienzo de 1000 × 500 unidades de viewBox (`millerY`, `mapX`, `mapY`), la misma con la que se proyectó el path de las fronteras. La cartografía es **Natural Earth 1:110 m (dominio público)** ya proyectada; **no se edita a mano**: vive como un único atributo `d` en `index.html` y solo se regenera desde la fuente.
-- **Los marcadores no se escalan.** Las posiciones se recalculan en unidades del viewBox en cada repintado (`x = mapX(lon) * k + tx`), el grupo de marcadores no recibe `transform` y el mundo sí (`translate(...) scale(k)`). Así un punto mide siempre lo mismo, con cualquier zoom.
+- **Los marcadores no cambian con el zoom.** Las posiciones se recalculan en unidades del viewBox en cada repintado (`x = mapX(lon) * k + tx`), el grupo de marcadores no recibe `transform` y el mundo sí (`translate(...) scale(k)`). El tamaño visual y el área de captura se ajustan al ancho renderizado del SVG: `.map__hit` garantiza un objetivo de 24 × 24 px y el número de los grupos se lee a 10 px reales; en pantallas estrechas las formas crecen para seguir siendo legibles.
 - **Agrupación por celdas de 26 unidades** del viewBox: un DJ solo se dibuja como marcador (`.map__marker`) y dos o más como grupo con la cifra (`.map__cluster`). El agrupado se recalcula con el zoom y la traslación, de modo que acercarse separa los grupos.
-- **Estados de ubicación**: ciudad verificada (`.map__dot`), solo país (`.map__ring`, sin relleno) y sin ubicación (no se dibuja nunca). La leyenda repite las tres formas.
-- **Zoom y traslación acotados**: `mapK` entre 1 y 6; con `k > 1`, `tx ∈ [1000·(1−k), 0]` y `ty ∈ [500·(1−k), 0]`; con `k = 1`, `tx = ty = 0`. Rueda hacia el cursor (factor `exp(-deltaY * 0.0015)`), arrastre con puntero y botones + / −.
-- **El panel lateral nunca queda vacío**: sin selección muestra «Selecciona un marcador para ver la ficha del DJ». Con un marcador seleccionado da puesto, nombre, ubicación, base del dato y, si el país del marcador difiere del país del ranking, una línea `Ranking: …`. Con un grupo, lista sus DJs como botones.
-- **Accesibilidad**: `#mapSvg` es un `role="group"` con un solo elemento enfocable a la vez (roving tabindex sobre marcadores y grupos); las flechas recorren los marcadores, Enter/Espacio abre la ficha (o lista el grupo) y `+` / `−` hacen zoom. La selección se anuncia por `#mapLive` (`aria-live="polite"`).
-- **Retorno de foco**: `openDetail(position, triggerEl)` acepta el elemento que abrió la ficha. Al cerrar, el foco vuelve a él si sigue en el documento y, si no, a `.card__media[data-position]`. El mapa le pasa el marcador seleccionado; las tarjetas siguen llamando solo con la posición.
-- **Etiqueta de un grupo**: solo nombra un lugar si ese lugar es común a **todo** el grupo (`N DJs en Los Ángeles`). `mapClusterPlace` devuelve la ciudad únicamente cuando todos los puntos con ciudad comparten la misma y ninguno queda sin ciudad; si el grupo no tiene ninguna ciudad y todos comparten país, devuelve el país; en cualquier otro caso devuelve `null` y el rótulo pasa a `N DJs agrupados en esta zona` (en `aria-label`, en el `map__panel-kicker` y en el anuncio `#mapLive`). Una celda de 26 unidades mezcla ciudades distintas, así que nombrar la más repetida afirmaba un hecho falso; el panel sigue listando nombre y ciudad de cada DJ para desambiguar.
+- **Ubicación**: los 100 DJs tienen una ciudad documentada y se dibujan con `.map__dot`. La leyenda muestra una sola clave, «Ciudad documentada»; no hay marcadores de solo país ni registros sin ubicación.
+- **Zoom y traslación acotados**: `mapK` entre 1 y 6; con `k > 1`, `tx ∈ [1000·(1−k), 0]` y `ty ∈ [500·(1−k), 0]`; con `k = 1`, `tx = ty = 0`. Rueda hacia el cursor (factor `exp(-deltaY * 0.0015)`), arrastre con puntero y botones + / −. En los límites de zoom y con `Ctrl` la rueda no se intercepta, para no bloquear el desplazamiento de la página ni el zoom del navegador. En `k = 1` el SVG usa `touch-action: pan-y pinch-zoom` y el arrastre no captura el puntero; con `k > 1` usa `touch-action: none` y el arrastre traslada el mapa.
+- **El panel lateral nunca queda vacío**: sin selección muestra «Selecciona un marcador para ver la ficha del DJ». Con un marcador seleccionado da puesto, nombre, ubicación, género y año de debut (solo si está documentado) y, si el país del marcador difiere del país del ranking, una línea `Ranking: …`. Con un grupo, lista sus DJs como botones. El panel guarda su tipo (`dj`/`cluster`) y la firma del grupo: si un filtro o el zoom lo deshacen, vuelve al estado por defecto en lugar de listar DJs que ya no forman ese grupo. El mapa no tiene botón de reinicio: la selección y el halo permanecen hasta elegir otro marcador o hasta que un filtro deje fuera al DJ seleccionado.
+- **Accesibilidad**: `#mapSvg` es un `role="group"` con un solo elemento enfocable a la vez (roving tabindex sobre marcadores y grupos); las flechas recorren los marcadores, Enter/Espacio abre la ficha (o lista el grupo) y `+` / `−` hacen zoom. La selección se anuncia por `#mapLive` y los recuentos filtrados por `#mapSummary`, ambos `aria-live="polite"`.
+- **Retorno de foco**: `openDetail(position, triggerEl)` acepta el elemento que abrió la ficha. Al cerrar, el foco vuelve a él si sigue en el documento y, si no, a `.card__media[data-position]`. El mapa le pasa el marcador seleccionado; las tarjetas siguen llamando solo con la posición. Si el DJ seleccionado está dentro de un grupo (no hay marcador suelto), el foco va a `.map__panel-open`; la búsqueda llama a `selectMapDj` con `focus: false` para no interrumpir la escritura.
+- **Etiqueta de un grupo**: solo nombra un lugar si ese lugar es común a **todo** el grupo (`N DJs en Los Ángeles`). `mapClusterPlace` devuelve la ciudad únicamente cuando todos los puntos comparten la misma; en cualquier otro caso devuelve `null` y el rótulo pasa a `N DJs agrupados en esta zona` (en `aria-label`, en el `map__panel-kicker` y en el anuncio `#mapLive`). Una celda de 26 unidades mezcla ciudades distintas, así que nombrar la más repetida afirmaba un hecho falso; el panel sigue listando nombre y ciudad de cada DJ para desambiguar.
+
+### Revisión de código y seguridad (2026-11-07)
+
+- La página no hace peticiones externas ni usa `fetch`, XHR, `eval`, `new Function`, `document.write`, almacenamiento, cookies ni formularios. Todos los recursos (HTML, CSS, JS, fotos, banderas SVG y cartografía) son locales.
+- El texto dinámico se inserta con `textContent` o `escapeHTML`; una cadena de inyección probada en los buscadores no crea nodos ni ejecuta código.
+- Los recuentos de un solo artista usan `djUnit()` (`1 DJ`, nunca `1 DJs`).
+- No se añadió CSP mediante `<meta>`: con `file://` aporta poco y podría bloquear los estilos en línea de las barras y el `data:` de la flecha de los desplegables. Si el sitio se publica en un servidor, la CSP (`default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'`) y las cabeceras `X-Content-Type-Options`, `Referrer-Policy` y `frame-ancestors` deben configurarse en el servidor.
+- `djs`, `djGeo`, `djBios` y `countryFlags` son datos estáticos y locales. Si en el futuro se cargan desde una fuente externa o editable, habría que validar `position` como entero y no tratar `countryFlags` como HTML de confianza.
 
 ## 3. Arquitectura del proyecto
 
@@ -96,7 +104,7 @@ Inventario de los tres archivos:
 
 - `index.html`: encabezado, barra de trabajo, estadísticas, metodología, listado, sección del mapa (con un único `<path>` de 126.892 caracteres) y ficha en `<dialog>`.
 - `styles.css`: tokens en `:root`, reset, componentes existentes y el bloque del mapa (`.map*`, `.map__key*`, `.map__panel*`), más sus reglas responsive dentro de las media queries.
-- `app.js`: `djs`, `djBios`, `djGeo`, helpers compartidos (`escapeHTML`, `normalize`, `searchTokens`, `countBy`, `formatPercent`, `fillSelect`), render del listado, ficha y módulo del mapa (`MAP_*`, `millerY`, `mapX`, `mapY`, `renderMap`, `selectMapDj`, …).
+- `app.js`: `djs`, `djBios`, `djGeo`, helpers compartidos (`escapeHTML`, `normalize`, `searchTokens`, `countBy`, `formatPercent`, `djUnit`, `fillSelect`), render del listado, ficha y módulo del mapa (`MAP_*`, `millerY`, `mapX`, `mapY`, `mapMetrics`, `renderMap`, `selectMapDj`, `activateMapCluster`, …).
 
 Este archivo `MEMORY.md` funciona como documentación y memoria del proyecto. No forma parte de la interfaz web.
 
@@ -219,7 +227,8 @@ Es una impresión a dos tintas: negro y magenta. No se añaden más colores; el 
 #### Piezas del diseño
 
 - **Cabecera a dos columnas**: `Top 100` a gran escala y, compartiendo línea base a la derecha, la entradilla. En móvil vuelve a una columna.
-- **Retícula de papel** detrás del encabezado (líneas al 6 % de opacidad, difuminadas hacia abajo) y una **regla que se traza una sola vez** al cargar (`@keyframes rule-in`). Es el único movimiento automático de la página.
+- **Retícula de papel en toda la página** (`.backdrop`): capa fija, `z-index: -1`, `pointer-events: none`, líneas de 1 px al 6 % de blanco con `opacity: 0.4`. Deriva con el scroll: el patrón repite cada 72 px y `app.js` la desplaza dentro de ese ciclo (`scrollY × 0,18 % 72`), así que la deriva parece continua sin capas gigantes ni repintados. El encabezado conserva la **regla que se traza una sola vez** al cargar (`@keyframes rule-in`).
+- **Movimiento**: solo la regla de entrada y la deriva de la retícula. Con `prefers-reduced-motion: reduce`, el CSS anula animaciones y transiciones y `app.js` no registra el listener de scroll: la trama queda estática.
 - **Barra de trabajo fija**: filtros y contador (`#resultsInfo`) + botón de limpiar se quedan pegados arriba en escritorio (`.toolbar { position: sticky }`). En móvil vuelve al flujo normal porque ocuparía 144 px de alto.
 - **Resumen numérico** como tabla de cuatro celdas separadas por reglas (truco `gap: 1px` + `background: var(--line)`), no como tarjetas.
 - **Fichas**: cabecera con `posición` (magenta) y género (gris), foto cuadrada a sangre y pie con nombre y bandera. Las celdas **comparten línea** (borde derecho e inferior en cada ficha, superior e izquierdo en el contenedor): la rejilla se lee como una hoja de contactos.
@@ -227,19 +236,19 @@ Es una impresión a dos tintas: negro y magenta. No se añaden más colores; el 
 
 #### Reglas que no se deben romper
 
-- No reintroducir degradados de texto, resplandores difusos ni sombras: eran el repertorio genérico del que se salió.
+- No reintroducir degradados de texto, resplandores difusos ni sombras: eran el repertorio genérico del que se salió. El anillo de 1 px de `.flag` (`box-shadow: 0 0 0 1px`) es un borde capilar para separar banderas claras del fondo, no una sombra decorativa; no añadir otras sombras.
 - No añadir una tercera tinta. Si se cambia `--spot`, comprobar el contraste sobre `--ink`.
 - Mantener alineación a la izquierda y longitudes de línea por debajo de ~80 caracteres.
 - **Nunca anular `outline` en un elemento interactivo.** El anillo de foco es uno solo, el global de `:focus-visible` (2 px de `--spot` con 3 px de separación). Los campos de filtro solo añaden el subrayado magenta como refuerzo.
 - **Jerarquía de encabezados fija**: un `<h1>` (título), un `<h2>` por sección («El ranking en cifras», «Cómo se construyó este ranking», «El mapa global de la música electrónica», «Listado de los 100 DJs», este último oculto) y un `<h3>` por DJ. La ficha usa además un `<h2>` propio (`#detailName`) dentro del `<dialog>`, así que el documento tiene 5 `<h2>`. No volver a convertir los nombres en `<h2>`. La sección del mapa no añade ningún `<h3>`: los `<summary>` de sus paneles no son encabezados.
-- **La geografía vive en `djGeo` y se indexa por nombre, nunca por posición** (`"Carl Cox": { … }`). Los nombres son únicos y estables; las posiciones podrían cambiar. Cada registro lleva `precision` (`city` | `country` | `unknown`), `basis` (`birth` | `formation` | `activity` | `origin` | `citizenship` | `ranking` | `none`) y `source` (QID/PROP/QID de Wikidata, `enwiki:Artículo/campo` o `ranking:País`).
-- **Los DJs con `precision: "unknown"` no se dibujan nunca en el mapa**; solo aparecen en el panel «Sin ubicación verificada» con su país de ranking.
+- **La geografía vive en `djGeo` y se indexa por nombre, nunca por posición** (`"Carl Cox": { … }`). Los nombres son únicos y estables; las posiciones podrían cambiar. Los 100 registros llevan ciudad, país, coordenadas, `precision: "city"`, `basis` (`birth` | `formation` | `activity` | `origin` en los datos actuales) y `source` (QID/PROP/QID de Wikidata, `enwiki:Artículo/campo`, `simplewiki:Artículo/campo` o `ranking:País`).
+- **No hay registros sin ubicación**: los 100 DJs tienen ciudad documentada, así que no existe el panel «Sin ubicación verificada» ni la distinción visual entre ciudad y solo país. Si falta una ciudad, hay que buscarla en una fuente antes de dar el registro por cerrado; no se usa «desconocido» como sustituto.
 - **El país del marcador es geográfico y puede no coincidir con el país del ranking** (`djs[].country`). Cuando difieren, el panel del mapa lo declara con una línea `Ranking: …`. No «corregir» `djGeo` para que coincida con el ranking ni al contrario.
 - **La cartografía es Natural Earth 1:110 m (dominio público) y no se edita a mano**: el `d` del `<path>` se generó con la proyección Miller del proyecto y solo se sustituye completo, desde la fuente.
-- **El mapa no comparte estado con los filtros del listado**: ni los lee ni los escribe, y no repinta `#djGrid` ni `#resultsInfo`. Buscador, país y casilla del mapa son propios y se reinician con «Centrar mapa».
+- **El mapa no comparte estado con los filtros del listado**: ni los lee ni los escribe, y no repinta `#djGrid` ni `#resultsInfo`. El buscador y el país del mapa son propios; no hay un botón de reinicio del mapa.
 - **Ningún marcador puede cambiar de tamaño con el zoom**: las posiciones se recalculan en unidades del viewBox y el grupo `#mapMarkers` no lleva `transform`.
 - **Ocultar solo con `.sr-only`**, nunca con `display: none` ni `visibility: hidden`, cuando el texto deba llegar a un lector de pantalla. La clase clipa el elemento a 1 px sin sacarlo del árbol de accesibilidad.
-- **El pie debe citar todas las fuentes realmente usadas en `images/CREDITOS.md`**: hoy Wikimedia Commons (68), Deezer (31) y Discogs (1, el puesto 22). Si se cambia una foto de origen, hay que actualizar el pie; el recuento real está en `CREDITOS.md`, no en el pie.
+- **El pie debe citar todas las fuentes realmente usadas en `images/CREDITOS.md`**: hoy Wikimedia Commons (69), Deezer (30) y Discogs (1, el puesto 22). Si se cambia una foto de origen, hay que actualizar el pie; el recuento real está en `CREDITOS.md`, no en el pie.
 - **Ningún control por debajo de 24 × 24 px** de área táctil (WCAG 2.5.8). `.btn-reset` lleva `min-height: 24px` por eso (medía 15 px); el botón de la foto ocupa la celda completa.
 - **No aplicar `opacity` a texto**: rebaja el contraste sin tocar el color. `.footer__credits` la llevaba y caía a 3,26:1 (falla AA); ahora usa `--ash-dim` puro (5,02:1).
 - **El gris de las fotos vive dentro de `@media (hover: hover)`**, nunca en la base: en táctil no existe el hover y las 100 fotos se quedarían grises para siempre.
@@ -277,6 +286,7 @@ Debe contener:
 - Estructura HTML5.
 - Metadatos y configuración responsive.
 - Título de la página.
+- Retícula de fondo decorativa (`.backdrop`, `aria-hidden="true"`, primer nodo del `body`).
 - Encabezado principal.
 - Introducción.
 - Sección de estadísticas (tarjetas resumen y paneles de barras).
@@ -286,7 +296,7 @@ Debe contener:
 - Selector de países.
 - Contenedor del ranking.
 - Mensaje para resultados vacíos.
-- Sección del mapa global (controles propios, `svg` con el path de Natural Earth, panel lateral, leyenda, resumen y dos paneles plegables).
+- Sección del mapa global (controles propios, `svg` con el path de Natural Earth, panel lateral, leyenda, resumen y un panel plegable de países).
 - Referencias a `styles.css` y `app.js`.
 
 ### styles.css
@@ -319,8 +329,9 @@ Debe contener:
 - `resetFilters()` para devolver los controles a su estado inicial.
 - Actualización del contador de resultados.
 - Mensaje cuando no haya coincidencias.
-- `djGeo`: ubicación documentada por nombre, con `city`, `country`, `lat`, `lon`, `precision`, `basis` y `source`.
-- Módulo del mapa: constantes de proyección (`MAP_W`, `MAP_H`, `MAP_RAD`, `millerY`, `MAP_YMAX`, `mapX`, `mapY`), estado (`mapK`, `mapTX`, `mapTY`, `mapSelected`, `mapQuery`, `mapCountry`, `mapCityOnly`, `mapFocusIdx`), `renderMap`, `renderMapGraticule`, `selectMapDj`, `centerMapOnDj`, `clampMap`, `zoomMapAtPoint` y los rellenos de panel y listas.
+- `djGeo`: ubicación documentada por nombre, con `city`, `country`, `lat`, `lon`, `precision`, `basis` y `source`; hoy los 100 registros son `precision: "city"`.
+- Módulo del mapa: constantes de proyección (`MAP_W`, `MAP_H`, `MAP_RAD`, `millerY`, `MAP_YMAX`, `mapX`, `mapY`), estado (`mapK`, `mapTX`, `mapTY`, `mapSelected`, `mapQuery`, `mapCountry`, `mapFocusIdx`, `mapPanelKind`, `mapPanelClusterKey`), `renderMap`, `renderMapGraticule`, `selectMapDj`, `activateMapCluster`, `centerMapOnDj`, `clampMap`, `zoomMapAtPoint`, `mapMetrics` y los rellenos de panel y listas.
+- Módulo de la retícula de fondo: `backdropLayer`, `backdropReducedMotion`, `BACKDROP_STEP` (72), `BACKDROP_RATE` (0,18), `paintBackdrop`, `scheduleBackdropPaint` y `syncBackdropMotion`.
 
 Mantener los datos centralizados para facilitar futuras modificaciones.
 
@@ -405,19 +416,21 @@ Objeto independiente de `djs`, con **100 entradas indexadas por nombre** (mismo 
 
 | Campo | Tipo | Notas |
 |---|---|---|
-| `city` | texto o `null` | Ciudad documentada. Solo con `precision: "city"`. |
-| `country` | texto o `null` | País geográfico del marcador. Puede no coincidir con `djs[].country`. `null` solo en el DJ sin ubicación. |
-| `lat` / `lon` | número o `null` | Coordenadas en grados. `null` únicamente con `precision: "unknown"`. |
-| `precision` | texto | `city` (94), `country` (5) o `unknown` (1). |
-| `basis` | texto | `birth`, `formation`, `activity`, `origin`, `citizenship`, `ranking` o `none`. |
-| `source` | texto o `null` | Procedencia: QID/PROP/QID de Wikidata, `enwiki:Artículo/campo`, `ranking:País` o `null` en el desconocido. |
+| `city` | texto | Ciudad documentada. Los 100 registros la tienen. |
+| `country` | texto | País geográfico del marcador. Puede no coincidir con `djs[].country`. |
+| `lat` / `lon` | número | Coordenadas en grados. Los 100 registros las tienen. |
+| `precision` | texto | `city` (100). `country` y `unknown` quedan previstos, pero hoy no se usan. |
+| `basis` | texto | `birth`, `formation`, `activity` u `origin` en los datos actuales; el esquema conserva `citizenship`, `ranking` y `none` para futuros casos. |
+| `source` | texto | Procedencia: QID/PROP/QID de Wikidata, `enwiki:Artículo/campo`, `simplewiki:Artículo/campo` o `ranking:País`. |
 
 Reglas de `djGeo`:
 
 - Se indexa por **nombre**, nunca por posición.
-- Todo registro no desconocido lleva coordenadas y `source`; el desconocido no lleva ninguna de las dos cosas.
-- `city` implica coordenadas y `precision: "city"`; `precision: "country"` usa el punto de etiqueta de Natural Earth del país.
-- El panel del mapa traduce `basis` a texto: «Ciudad de nacimiento», «Ciudad de formación», «Ciudad de actividad», «Solo país» y «País del ranking».
+- Los 100 registros llevan ciudad, país, coordenadas y `source`.
+- `city` implica coordenadas y `precision: "city"`.
+- Si falta una ciudad, **no se escribe «desconocido»**: se busca una fuente que la documente y se actualizan `city`, `country`, `lat`, `lon`, `basis` y `source`.
+- Los seis registros que antes no tenían ciudad ya están documentados: Ron Hardy (Chicago, actividad), Michael Bibi (Londres, origen), Pawsa (Londres, origen), Âme (Karlsruhe, origen), Vini Vici (Afula, origen) y Ace Ventura (Zúrich, actividad; el panel muestra `Ranking: Israel`). Pawsa sigue sin `debutYear`.
+- `basis` sigue siendo obligatorio en `djGeo` (integridad del dato), pero el panel ya no muestra su etiqueta: la leyenda solo distingue la ciudad documentada y la nota del mapa resume las bases. `mapBasisLabel()` se retiró.
 
 ## 8. Reglas para futuras modificaciones
 
@@ -495,15 +508,21 @@ Comprobar siempre:
 - [ ] La sección no usa `--spot`, barras ni elementos interactivos.
 - [ ] La sección declara una versión manual, no una fecha generada por JS.
 - [ ] El mapa dibuja marcadores y grupos (`0 < .map__marker + .map__cluster ≤ 100`) sin errores de consola.
-- [ ] `djGeo` tiene 100 entradas con los mismos nombres que `djs` y `precision` válida; `city` implica coordenadas y `unknown` no tiene ninguna.
+- [ ] `djGeo` tiene 100 entradas con los mismos nombres que `djs`; todas llevan ciudad, país, coordenadas, `source` y `precision: "city"`.
 - [ ] El mapa no repinta el listado: `#djGrid`, `#resultsInfo` y los filtros superiores no cambian al usarlo.
 - [ ] Rueda, arrastre y botones + / − cambian el `transform` de `#mapWorld` y la traslación queda acotada.
-- [ ] Clic en marcador rellena el panel y muestra el anillo; clic en grupo lista sus DJs.
+- [ ] En los límites de zoom y con Ctrl, la rueda no se intercepta; en `k = 1` el mapa no captura el arrastre y conserva `touch-action: pan-y pinch-zoom`.
+- [ ] Marcadores y grupos tienen un objetivo táctil de al menos 24 × 24 px y el número de los grupos se lee a 10 px reales, también en móvil.
+- [ ] Clic en marcador rellena el panel y muestra el anillo; clic en grupo lista sus DJs y conserva el foco en el mapa.
+- [ ] El panel del mapa no queda obsoleto: al cambiar zoom o filtros, un grupo que ya no existe vuelve al estado por defecto; un DJ filtrado fuera no se puede seleccionar.
+- [ ] Al elegir un DJ de un grupo, el foco va a `.map__panel-open`, no a `<body>`; al escribir en el buscador del mapa, el foco sigue en el campo.
 - [ ] El rótulo de un grupo no nombra un lugar salvo que ese lugar sea común a todo el grupo; si no, dice «N DJs agrupados en esta zona» (en `aria-label`, `kicker` y `#mapLive`).
 - [ ] «Abrir ficha» abre el diálogo y, al cerrar, el foco vuelve al marcador.
-- [ ] El buscador del mapa deja un solo marcador con «chase status» y lo centra con `scale(4)`; «Centrar mapa» restablece zoom, traslación y filtros.
+- [ ] El buscador del mapa deja un solo marcador con «chase status» y lo centra con `scale(4)`.
 - [ ] Sigue habiendo 1 `<h1>`, 5 `<h2>` y 100 `<h3>`: el mapa no añade encabezados.
 - [ ] El mapa no introduce radios, sombras, degradados ni una segunda tinta de acento.
+- [ ] La retícula de fondo se desplaza solo dentro del ciclo de 72 px (`transform` entre 0 y −72 px) y no repinta la página.
+- [ ] Con `prefers-reduced-motion: reduce`, `.backdrop` no tiene `transform` y el scroll no lo escribe.
 
 ## 10. Posibles mejoras futuras
 
@@ -521,7 +540,7 @@ Estas funcionalidades son ideas para futuras versiones y no deben implementarse 
 Pendientes descartados por ahora (paquete C, no implementado):
 
 - Mostrar el número de resultados por opción en los desplegables y deshabilitar las combinaciones imposibles.
-- Debounce de ~120 ms en el buscador y caché de nombres normalizados.
+- Debounce de ~120 ms en el buscador y caché de nombres normalizados. (El repintado del mapa durante el arrastre ya está agrupado por `requestAnimationFrame`.)
 
 ## 11. Principios generales del proyecto
 

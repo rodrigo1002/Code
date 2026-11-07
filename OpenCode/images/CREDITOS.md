@@ -102,7 +102,7 @@ el enlace de cada archivo para ver la licencia y la atribución completas.
 | 94 | Sub Focus | [Deezer](https://www.deezer.com/artist/11214) |
 | 95 | Chase & Status | [Deezer](https://www.deezer.com/artist/15617) |
 | 96 | Roni Size | [Deezer](https://www.deezer.com/artist/3618) |
-| 97 | Bassnectar | [Deezer](https://www.deezer.com/artist/260817) |
+| 97 | Bassnectar | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:SoCo_Music_Bassnectar_003_%282624368659%29.jpg) |
 | 98 | Excision | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Excision_2015.jpg) |
 | 99 | Zomboy | [Deezer](https://www.deezer.com/artist/1481809) |
 | 100 | Angerfist | [Deezer](https://www.deezer.com/artist/15746) |
