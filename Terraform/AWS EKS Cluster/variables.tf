@@ -12,13 +12,13 @@ variable "cluster_endpoint_public_access_cidrs" {
   type        = list(string)
   validation {
     condition = length(var.cluster_endpoint_public_access_cidrs) > 0 && alltrue([
-      for cidr in var.cluster_endpoint_public_access_cidrs : can(cidrhost(cidr, 0)) && cidr != "0.0.0.0/0"
+      for cidr in var.cluster_endpoint_public_access_cidrs : can(cidrnetmask(cidr)) && cidr != "0.0.0.0/0"
     ])
     error_message = "Supply one or more valid restricted IPv4 CIDR ranges, not a world-open range."
   }
 }
 variable "k8s_version" {
-  default = "1.27"
+  default = "1.34"
 }
 
 variable "k8s_cluster_name" {

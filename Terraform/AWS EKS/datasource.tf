@@ -1,3 +1,1 @@
-data "aws_iam_users" "me" {
-  names = ["Rodrigo"]
-}
+# The EKS module's cluster creator receives administrative access through its access entry.

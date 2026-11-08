@@ -40,7 +40,7 @@ variable "admin_cidr" {
   description = "Administrator CIDR allowed to SSH to the instance"
   type        = string
   validation {
-    condition     = can(cidrhost(var.admin_cidr, 0)) && var.admin_cidr != "0.0.0.0/0"
+    condition     = can(cidrnetmask(var.admin_cidr)) && var.admin_cidr != "0.0.0.0/0"
     error_message = "admin_cidr must be a valid, restricted IPv4 CIDR range."
   }
 }
@@ -48,7 +48,7 @@ variable "app_ingress_cidr" {
   description = "CIDR allowed to access the application on port 8080"
   type        = string
   validation {
-    condition     = can(cidrhost(var.app_ingress_cidr, 0)) && var.app_ingress_cidr != "0.0.0.0/0"
+    condition     = can(cidrnetmask(var.app_ingress_cidr)) && var.app_ingress_cidr != "0.0.0.0/0"
     error_message = "app_ingress_cidr must be a valid, restricted IPv4 CIDR range."
   }
 }
@@ -151,7 +151,7 @@ resource "aws_instance" "myapp" {
   availability_zone           = var.avail_zone
   associate_public_ip_address = true
   key_name                    = aws_key_pair.ssh.key_name
-  user_data                   = file("entry-script.sh")
+  user_data                   = file("${path.module}/entry-script.sh")
   user_data_replace_on_change = true
 
   tags = { Name = "${var.env_prefix}-server" }

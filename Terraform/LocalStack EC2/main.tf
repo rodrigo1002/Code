@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region                      = "us-east-1"
   access_key                  = "test"
   secret_key                  = "test"
   skip_credentials_validation = true
@@ -33,12 +33,17 @@ provider "aws" {
   }
 }
 
+variable "ami_id" {
+  description = "AMI ID available in the configured LocalStack environment"
+  type        = string
+}
+
 resource "aws_instance" "myserver" {
-  ami           = "ami-830c94e3"
+  count         = 2
+  ami           = var.ami_id
   instance_type = "t2.micro"
-  count = 2
 
   tags = {
-    Name = "Server${count.index + 1}",
+    Name = "Server${count.index + 1}"
   }
 }

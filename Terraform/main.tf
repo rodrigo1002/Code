@@ -15,7 +15,7 @@ variable "admin_cidr" {
   description = "CIDR range allowed to connect to EC2 over SSH"
   type        = string
   validation {
-    condition     = can(cidrhost(var.admin_cidr, 0)) && var.admin_cidr != "0.0.0.0/0"
+    condition     = can(cidrnetmask(var.admin_cidr)) && var.admin_cidr != "0.0.0.0/0"
     error_message = "admin_cidr must be a valid, restricted IPv4 CIDR range."
   }
 }

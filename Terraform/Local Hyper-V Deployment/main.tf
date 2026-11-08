@@ -7,13 +7,34 @@ terraform {
   }
 }
 
+variable "hyperv_host" {
+  description = "Hyper-V host name or address"
+  type        = string
+}
+
+variable "hyperv_user" {
+  description = "Hyper-V user name"
+  type        = string
+}
+
+variable "hyperv_password" {
+  description = "Hyper-V password"
+  type        = string
+  sensitive   = true
+}
+
+variable "vm_storage_path" {
+  description = "Absolute directory on the Hyper-V host for VM disks and state"
+  type        = string
+}
+
 provider "hyperv" {
   # Username and password for connecting to Hyper-V
-  user     = "Administrator" # Update with your username
-  password = "RM" # Update with your password
+  user     = var.hyperv_user
+  password = var.hyperv_password
 
   # Host and port for connecting to Hyper-V
-  host = "Ryan-PC" # Hyper-V host, use localhost if running on the same machine
+  host = var.hyperv_host
   port = 5986        # Port for WinRM HTTPS listener
 
   # Connection settings
@@ -50,7 +71,7 @@ resource "hyperv_network_switch" "dmz" {
 }
 
 resource "hyperv_vhd" "webserver" {
-  path = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\webserver.vhdx" #Needs to be absolute path
+  path = "${var.vm_storage_path}\\webserver.vhdx"
   size = 10737418240                                                         #10GB
 }
 
@@ -72,8 +93,8 @@ resource "hyperv_machine_instance" "default" {
   memory_startup_bytes                    = 2147483648
   notes                                   = ""
   processor_count                         = 1
-  smart_paging_file_path                  = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\Hyper-V"
-  snapshot_file_location                  = "C:\\Code\\GitHub\\Terraform\\Local Deployment\\VM\\Hyper-V"
+  smart_paging_file_path                  = var.vm_storage_path
+  snapshot_file_location                  = var.vm_storage_path
   #dynamic_memory                         = false
   static_memory = true
   state         = "Running"

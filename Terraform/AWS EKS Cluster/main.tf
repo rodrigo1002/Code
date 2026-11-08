@@ -1,10 +1,10 @@
 provider "aws" {
-  region     = var.aws_region
+  region = var.aws_region
 }
 
 module "myapp-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.1.1"
+  version = "~> 5.0"
 
   name            = "myapp-vpc"
   cidr            = var.vpc_cidr_block
@@ -22,28 +22,34 @@ module "myapp-vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/cluster/myapp-eks-cluster" = "shared"
-    "kubernetes.io/role/elb"                  = 1
+    "kubernetes.io/role/elb"                  = "1"
   }
 
   private_subnet_tags = {
     "kubernetes.io/cluster/myapp-eks-cluster" = "shared"
-    "kubernetes.io/role/internal-elb"         = 1
+    "kubernetes.io/role/internal-elb"         = "1"
   }
 }
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.16.0"
+  version = "~> 21.0"
 
-  cluster_name    = var.k8s_cluster_name
-  cluster_version = var.k8s_version
+  name               = var.k8s_cluster_name
+  kubernetes_version = var.k8s_version
 
   subnet_ids = module.myapp-vpc.private_subnets
   vpc_id     = module.myapp-vpc.vpc_id
 
-  # to access cluster externally with kubectl
-  cluster_endpoint_public_access       = true
-  cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
+  endpoint_public_access       = true
+  endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
+  enable_cluster_creator_admin_permissions = true
+
+  addons = {
+    aws-ebs-csi-driver = {
+      most_recent = true
+    }
+  }
 
   tags = {
     environment = "development"
@@ -55,19 +61,11 @@ module "eks" {
       min_size     = 1
       max_size     = 3
       desired_size = 3
+      instance_types = ["t3.small"]
 
-      instance_types = ["t2.small"]
-
-      # add permission for ebs storage creation for Consul
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }
     }
   }
-}
-
-# enable ebs-csi driver add-on for ebs storage creation for Consul
-resource "aws_eks_addon" "ebs" {
-  cluster_name = module.eks.cluster_name
-  addon_name   = "aws-ebs-csi-driver"
 }

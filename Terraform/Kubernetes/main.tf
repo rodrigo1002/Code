@@ -26,7 +26,7 @@ resource "kubernetes_deployment" "nginx" {
 
       spec {
         container {
-          image = "nginx:latest"
+          image = "nginx:1.27.5"
           name  = "nginx"
           port {
             container_port = 80
@@ -74,5 +74,5 @@ output "nginx_service_ip" {
 
 output "nginx_landing_page_url" {
   description = "HTTP URL to access the NGINX landing page"
-  value       = "http://${kubernetes_service.nginx.spec[0].cluster_ip}:${kubernetes_service.nginx.spec[0].port[0].node_port}"
+  value       = "http://localhost:${kubernetes_service.nginx.spec[0].port[0].node_port}"
 }

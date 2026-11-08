@@ -2,17 +2,13 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.17"
+      version = "~> 4.0"
     }
   }
 }
 
 provider "azurerm" {
   features {}
-  subscription_id = ""
-  tenant_id       = ""
-  client_id       = ""
-  client_secret   = ""
 }
 resource "azurerm_service_plan" "plan787878" {
   name                = "plan787878"
@@ -31,7 +27,7 @@ resource "azurerm_windows_web_app" "New-App-RM" {
     always_on = false
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v8.0"
     }
   }
 
@@ -44,7 +40,7 @@ resource "azurerm_mssql_server" "sqlserver294203" {
   location                     = "North Europe"
   version                      = "12.0"
   administrator_login          = "sqlusr"
-  administrator_login_password = "Azure@123"
+  administrator_login_password = var.sql_admin_password
 }
 resource "azurerm_mssql_database" "appdb" {
   name         = "appdb"
@@ -54,4 +50,9 @@ resource "azurerm_mssql_database" "appdb" {
   max_size_gb  = 2
   sku_name     = "Basic"
   depends_on   = [azurerm_mssql_server.sqlserver294203]
+}
+variable "sql_admin_password" {
+  description = "SQL administrator password supplied through a protected tfvars file or TF_VAR_sql_admin_password"
+  type        = string
+  sensitive   = true
 }

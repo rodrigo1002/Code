@@ -1,52 +1,42 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
+  version = "~> 21.0"
 
-  cluster_name    = "Rodrigo-eks"
-  cluster_version = "1.24"
+  name               = "Rodrigo-eks"
+  kubernetes_version = "1.34"
 
-  vpc_id                          = module.vpc.vpc_id
-  subnet_ids                      = module.vpc.private_subnets
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
+  vpc_id     = module.vpn.vpc_id
+  subnet_ids = module.vpn.private_subnets
 
-  cluster_addons = {
+  endpoint_public_access       = true
+  endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
+  endpoint_private_access      = true
 
+  enable_cluster_creator_admin_permissions = true
+
+  addons = {
     coredns = {
-      resolve_conflict = "OVERWRITE"
+      most_recent = true
     }
-
-    vpc-cni = {
-      resolve_conflict = "OVERWRITE"
-    }
-
     kube-proxy = {
-      resolve_conflict = "OVERWRITE"
+      most_recent = true
     }
-
-    csi = {
-      resolve_conflict = "OVERWRITE"
+    vpc-cni = {
+      most_recent = true
+    }
+    aws-ebs-csi-driver = {
+      most_recent = true
     }
   }
-
-  manage_aws_auth_configmap = true
-   aws_auth_users = [
-  {
-    userarn = "arn:aws:iam::123456789012:user/developer"
-    username = "Rodrigo"
-    groups   = ["system:masters"]
-  }
-]
 
   eks_managed_node_groups = {
     node-group = {
-      desired_capacity = 1
-      max_capacity     = 2
-      min_capacity     = 1
-      instance_types   = ["t3.medium"]
-
-      tags = {
-        Environment = "tutorial"
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+      instance_types = ["t3.medium"]
+      iam_role_additional_policies = {
+        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }
     }
   }
@@ -58,16 +48,15 @@ module "eks" {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
+  name = module.eks.cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+  name = module.eks.cluster_name
 }
 
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster)
-  token                  = data.aws_eks_cluster_auth.token
-
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 }
