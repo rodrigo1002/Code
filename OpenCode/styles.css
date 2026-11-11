@@ -1170,7 +1170,7 @@ html.detail-open {
   color: var(--ash-dim);
 }
 
-/* Leyenda: punto, anillo y raya, con la misma forma que el mapa. */
+/* Leyenda: el punto de ciudad documentada, con la misma forma que el mapa. */
 .map__legend {
   display: flex;
   flex-wrap: wrap;

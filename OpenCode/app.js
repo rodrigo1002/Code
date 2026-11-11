@@ -515,6 +515,11 @@ function djUnit(count) {
   return count === 1 ? "DJ" : "DJs";
 }
 
+// "1 ciudad" / "2 ciudades", "1 país" / "2 países": mismo criterio.
+function pluralUnit(count, singular, plural) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 // Rellena un desplegable con los valores recibidos, sin duplicados.
 function fillSelect(select, values) {
   values.forEach((value) => {
@@ -924,6 +929,11 @@ let mapTY = 0;
 let mapSelected = null;
 let mapQuery = "";
 let mapCountry = "all";
+// true mientras el zoom lo haya puesto el buscador y el usuario no lo haya
+// movido a mano. Vaciar el buscador devuelve entonces la vista mundial.
+let mapSearchZoomed = false;
+// Puesto que seleccionó la búsqueda: solo esa selección se retira al vaciarla.
+let mapSearchSelected = null;
 let mapFocusIdx = 0;
 
 // Contenido actual del panel lateral. Sirve para invalidarlo cuando el zoom,
@@ -1170,15 +1180,39 @@ function renderMapPanelCluster(item) {
     : `${count} DJs agrupados en esta zona`;
 }
 
+// Resumen del mapa: se cuenta sobre el conjunto filtrado, no sobre los 100, y
+// las cifras son de ciudades y países distintos del marcador (no del ranking).
 function updateMapSummary(filtered) {
-  const hasFilters = searchTokens(mapQuery).length > 0 || mapCountry !== "all";
-  const prefix = hasFilters
-    ? `Mostrando ${filtered.length} de ${djs.length} · `
-    : "";
+  if (filtered.length === 0) {
+    const empty = "Ningún DJ coincide con los filtros del mapa.";
+    if (mapSummary.textContent !== empty) mapSummary.textContent = empty;
+    return;
+  }
+
+  const cities = new Set();
+  const countries = new Set();
+
+  filtered.forEach((dj) => {
+    const geo = djGeo[dj.name];
+    if (!geo) return;
+    if (geo.city) cities.add(geo.city);
+    if (geo.country) countries.add(geo.country);
+  });
+
+  const hasFilters =
+    searchTokens(mapQuery).length > 0 || mapCountry !== "all";
+
+  // Con filtros, "2 de 100" ya dice cuántos son: no se repite el recuento.
+  const parts = [];
+  if (!hasFilters) parts.push(`${filtered.length} ${djUnit(filtered.length)}`);
+  parts.push(pluralUnit(cities.size, "ciudad", "ciudades"));
+  parts.push(
+    pluralUnit(countries.size, "país del marcador", "países del marcador")
+  );
 
   const summary =
-    `${prefix}${filtered.length} ${djUnit(filtered.length)} ` +
-    "con ciudad documentada";
+    (hasFilters ? `Mostrando ${filtered.length} de ${djs.length} · ` : "") +
+    parts.join(" · ");
 
   // Se evita reescribir el mismo texto en cada repintado del arrastre para no
   // disparar anuncios repetidos en el lector de pantalla.
@@ -1326,6 +1360,10 @@ function clampMap() {
 
 // Zoom hacia un punto del viewBox: ese punto se queda quieto bajo el cursor.
 function zoomMapAtPoint(viewX, viewY, factor) {
+  // El usuario toma el control del encuadre: vaciar el buscador ya no debe
+  // devolver la vista mundial.
+  mapSearchZoomed = false;
+
   const previousK = mapK;
   mapK = Math.min(MAP_K_MAX, Math.max(MAP_K_MIN, mapK * factor));
 
@@ -1444,15 +1482,39 @@ function renderMapLists() {
 
 mapSearchInput.addEventListener("input", () => {
   mapQuery = mapSearchInput.value;
-  renderMap();
+  const tokens = searchTokens(mapQuery);
 
-  // Una sola coincidencia: se centra y se selecciona.
-  if (searchTokens(mapQuery).length === 0) return;
+  // Vaciar el buscador devuelve la vista mundial si el zoom lo puso la propia
+  // búsqueda: si no, el mapa se queda atrapado en el detalle de una coincidencia.
+  if (tokens.length === 0) {
+    if (mapSearchZoomed) {
+      mapSearchZoomed = false;
+      mapK = MAP_K_MIN;
+      mapTX = 0;
+      mapTY = 0;
+
+      // La búsqueda también creó su selección: se retira con ella para no dejar
+      // un panel que habla de un DJ sin marcador resaltado. Si el usuario eligió
+      // después otro marcador, esa elección se respeta.
+      if (mapSelected !== null && mapSelected === mapSearchSelected) {
+        mapSelected = null;
+        renderMapPanelDefault();
+      }
+      mapSearchSelected = null;
+    }
+    renderMap();
+    return;
+  }
+
+  renderMap();
 
   const visible = mapFilteredDjs();
 
+  // Una sola coincidencia: se centra y se selecciona.
   if (visible.length === 1) {
     centerMapOnDj(visible[0]);
+    mapSearchZoomed = true;
+    mapSearchSelected = visible[0].position;
     // Sin foco: el usuario sigue escribiendo en el buscador.
     selectMapDj(visible[0].position, { focus: false });
   }
@@ -1547,6 +1609,9 @@ mapSvg.addEventListener("pointerdown", (event) => {
 
   const rect = mapSvg.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
+
+  // Arrastrar también es tomar el control del encuadre.
+  mapSearchZoomed = false;
 
   mapDrag = {
     pointerId: event.pointerId,
