@@ -375,7 +375,8 @@ El nombre de cada DJ es un **`<h3>`**, no un `<h2>`: el listado cuelga de su pro
 - La línea de contexto (`#detailContext`) cuenta sobre el array completo `djs`, nunca sobre los resultados filtrados.
 - La foto de la ficha se ve **en color** (sin `filter`).
 - **Cada ficha incluye una reseña editorial** de 21–40 palabras, guardada en `djBios` (`app.js`), un objeto indexado **por nombre** (los nombres son únicos; las posiciones no se tocan). Se inserta con `textContent` y se muestra bajo el rótulo «Reseña editorial». No es un dato verificado del ranking: es texto redactado por el proyecto y así se declara en la nota estática del pie de la ficha. Si falta una entrada en `djBios`, el bloque se oculta con `hidden` en lugar de dejar un hueco.
-- Salidas: botón «Volver al ranking», Esc (nativo) y clic en el fondo. Al cerrar, el foco vuelve al botón de la foto (`.card__media[data-position]`) de la misma tarjeta; si no existe (lista refiltrada), al `#djGrid` (`tabindex="-1"`).
+- Salidas: botón «Volver al ranking», Esc (nativo) y clic en el fondo. Al cerrar, el foco vuelve al botón de la foto (`.card__media[data-position]`) de la misma tarjeta; si no existe (lista refiltrada), al `#djGrid` (`tabindex="-1"`). «Ver en el mapa» es la excepción: cierra la ficha y lleva el foco al marcador, o a «Abrir ficha» del panel si el DJ sigue dentro de un grupo.
+- **«Ver en el mapa»** (`#detailMap`) centra el mapa en ese DJ con `scale(4)` y lo selecciona. No llama a `render()` ni toca buscador, género o país del listado. Si el buscador o el país del mapa ocultan al DJ, los vacía; si no, los deja. No marca `mapSearchZoomed`: vaciar después el buscador del mapa no deshace este encuadre. El botón se oculta solo si el registro no tiene coordenadas (hoy no ocurre: los 100 las tienen).
 - Con el diálogo abierto, `html.detail-open` bloquea el desplazamiento del fondo y reserva `--scrollbar-gap` para que la página no salte.
 - En móvil la ficha pasa a una columna (foto arriba) y `.detail__row` apila etiqueta y valor por debajo de 460 px.
 - No se usa el atributo `hidden` en el `<dialog>`: `[hidden] { display: none !important; }` lo dejaría invisible al abrir.
@@ -496,6 +497,8 @@ Comprobar siempre:
 - [ ] Cada tarjeta tiene un único disparador de ficha: el botón de la foto (`.card__media`), sin botón «Ver ficha».
 - [ ] Las 100 fichas muestran su reseña editorial y ninguna repite texto de otra.
 - [ ] Al cerrar la ficha el foco vuelve a la foto de la tarjeta de origen.
+- [ ] «Ver en el mapa» cierra la ficha, centra ese DJ con `scale(4)` y no cambia los filtros del listado. Si los filtros del mapa lo ocultaban, los vacía. El foco va al marcador, o a «Abrir ficha» si sigue agrupado.
+- [ ] `#resultsInfo` dice «Mostrando 1 DJ de 100», nunca «1 DJs».
 - [ ] El texto del pie llega a 4,5:1 sobre `--ink` (sin `opacity`).
 - [ ] Las fuentes son del sistema (Bahnschrift / Consolas); no se descarga ninguna.
 - [ ] No hay errores JavaScript.

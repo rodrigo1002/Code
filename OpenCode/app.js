@@ -449,6 +449,7 @@ const decadePanelHint = document.getElementById("decadePanelHint");
 const detailDialog = document.getElementById("djDetail");
 const detailRank = document.getElementById("detailRank");
 const detailBack = document.getElementById("detailBack");
+const detailMap = document.getElementById("detailMap");
 const detailPhoto = document.getElementById("detailPhoto");
 const detailName = document.getElementById("detailName");
 const detailFacts = document.getElementById("detailFacts");
@@ -456,6 +457,8 @@ const detailBio = document.getElementById("detailBio");
 const detailBioText = document.getElementById("detailBioText");
 const detailContext = document.getElementById("detailContext");
 let lastTriggerPosition = null;
+// «Ver en el mapa» cierra la ficha a propósito: el foco va al marcador, no a la tarjeta.
+let detailReturnSuppressed = false;
 // Elemento que abrió la ficha cuando no es una tarjeta (un marcador del mapa).
 let lastTriggerElement = null;
 
@@ -718,6 +721,13 @@ function openDetail(position, triggerEl) {
     `${mismoGenero} ${mismoGenero === 1 ? "DJ comparte" : "DJs comparten"} este género · ` +
     `${mismoPais} ${mismoPais === 1 ? "es" : "son"} de ${dj.country}`;
 
+  const geo = djGeo[dj.name];
+  detailMap.hidden = !(
+    geo &&
+    typeof geo.lat === "number" &&
+    typeof geo.lon === "number"
+  );
+
   // El hueco de la barra de desplazamiento se mide antes de bloquear el fondo.
   const gap = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty("--scrollbar-gap", gap + "px");
@@ -826,7 +836,8 @@ function render() {
   // en la mayoría de lectores. La sección ya se anuncia por su <h2> y el
   // recuento llega por #resultsInfo (aria-live), así que aquí sobraba.
 
-  resultsInfo.textContent = `Mostrando ${filtered.length} de ${djs.length} DJs`;
+  resultsInfo.textContent =
+    `Mostrando ${filtered.length} ${djUnit(filtered.length)} de ${djs.length}`;
   emptyState.hidden = filtered.length !== 0;
   resetWrapper.hidden = !hasFilters;
 }
@@ -854,6 +865,7 @@ grid.addEventListener("click", (event) => {
 });
 
 detailBack.addEventListener("click", closeDetail);
+detailMap.addEventListener("click", () => showDjOnMap(lastTriggerPosition));
 
 detailDialog.addEventListener("click", (event) => {
   if (event.target === detailDialog) closeDetail();
@@ -867,6 +879,12 @@ detailDialog.addEventListener("close", () => {
   // si no, la foto de la tarjeta, como hasta ahora.
   const explicit = lastTriggerElement;
   lastTriggerElement = null;
+
+  // La navegación al mapa ya colocó el foco: no devolverlo a la tarjeta.
+  if (detailReturnSuppressed) {
+    detailReturnSuppressed = false;
+    return;
+  }
 
   if (explicit && document.contains(explicit)) {
     explicit.focus({ preventScroll: true });
@@ -1435,6 +1453,49 @@ function activateMapCluster(element, item) {
   focusMapItem(element);
   renderMap();
   renderMapPanelCluster(item);
+}
+
+// Cierra la ficha y muestra ese DJ en el mapa. No toca los filtros del listado.
+// Si el buscador o el país del mapa lo ocultan, los retira: si no, el botón
+// prometería un marcador que el mapa no puede dibujar.
+function showDjOnMap(position) {
+  const dj = djs.find((item) => item.position === position);
+  if (!dj) return;
+
+  const geo = djGeo[dj.name];
+  if (!geo || typeof geo.lat !== "number" || typeof geo.lon !== "number") return;
+
+  // Este encuadre lo pidió la ficha, no el buscador: vaciar la búsqueda no debe
+  // devolver la vista mundial ni retirar esta selección.
+  mapSearchZoomed = false;
+  mapSearchSelected = null;
+
+  const tokens = searchTokens(mapQuery);
+  const searchable = normalize(dj.name);
+  if (!tokens.every((token) => searchable.includes(token))) {
+    mapQuery = "";
+    mapSearchInput.value = "";
+  }
+
+  if (mapCountry !== "all" && geo.country !== mapCountry) {
+    mapCountry = "all";
+    mapCountrySelect.value = "all";
+  }
+
+  centerMapOnDj(dj);
+  selectMapDj(dj.position, { focus: false });
+
+  detailReturnSuppressed = true;
+  closeDetail();
+
+  const marker = mapMarkers.querySelector(
+    `.map__marker[data-position="${dj.position}"]`
+  );
+  const target =
+    marker || mapPanel.querySelector(".map__panel-open") || mapSvg;
+
+  target.focus({ preventScroll: true });
+  mapSvg.scrollIntoView({ block: "center", inline: "nearest" });
 }
 
 // Centra el mapa en un DJ con una escala cómoda para leer el entorno.

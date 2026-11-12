@@ -731,9 +731,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Botón de vuelta: solo una caja capilar, como un sello de archivo. */
+.detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Botones de la ficha: solo una caja capilar, como un sello de archivo. */
 .detail__back {
   appearance: none;
+  min-height: 24px;
   padding: 0.4rem 0.7rem;
   background: transparent;
   border: 1px solid var(--line);
