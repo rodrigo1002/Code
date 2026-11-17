@@ -8,6 +8,7 @@
 - `system-info.ps1` outputs a separate system summary.
 - The collector scripts require PowerShell 7 or later and support Windows.
 - The browser loads `data/dashboard.json`, renders the dashboard sections, and keeps up to 60 valid CPU and memory utilization samples in page memory.
+- Collection diagnostics summarize errors and mark affected sections; repeated errors in one category are retained, and older snapshots with string errors remain supported.
 - Dashboard status classes use a fixed allowlist. Unrecognized status values receive the neutral style, and status text is HTML-escaped.
 - The collector evaluates available security checks so an unavailable check does not hide a known disabled, not-ready, or absent security state.
 - Zero free memory is preserved as a measured value. Storage health is `N/A` when there are no drives or a drive status is unknown, and network health is `N/A` when network collection fails.

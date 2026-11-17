@@ -9,7 +9,7 @@ if (-not $IsWindows) { throw 'This collector is supported only on Windows.' }
 $errors = [ordered]@{}
 function Get-Safely {
     param([string]$Section, [scriptblock]$Action, $Fallback = $null)
-    try { & $Action } catch { $errors[$Section] = $_.Exception.Message; $Fallback }
+    try { & $Action } catch { if ($errors.Contains($Section)) { $errors[$Section] = @($errors[$Section]) + $_.Exception.Message } else { $errors[$Section] = $_.Exception.Message }; $Fallback }
 }
 function Get-Text($Value) { if ($null -eq $Value -or [string]::IsNullOrWhiteSpace("$Value")) { 'N/A' } else { "$Value" } }
 function To-GiB($Bytes) { if ($null -eq $Bytes) { $null } else { [math]::Round($Bytes / 1GB, 2) } }

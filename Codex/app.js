@@ -184,8 +184,20 @@ function render(data, source, noticeText = '') {
 
     $('#securityContent').innerHTML = Object.entries(data.security || {}).map(([name, value]) => card(name.replace(/([A-Z])/g, ' $1'), value)).join('') || card('Security status', 'N/A');
     $('#hardwareContent').innerHTML = (data.gpu || []).map(gpu => card('GPU', gpu.name, `${gib(gpu.adapterMemoryGiB)} · driver ${esc(gpu.driverVersion)} · ${esc(gpu.driverDate)}`)).join('') || card('GPU', 'N/A');
-    $('#errorsContent').textContent = Object.keys(data.errors || {}).length
-        ? Object.entries(data.errors).map(([name, error]) => `${name}: ${error}`).join('\n')
+    const errors = Object.entries(data.errors || {}).flatMap(([name, messages]) =>
+        (Array.isArray(messages) ? messages : [messages]).map(message => ({ name, message })));
+    $('#diagnosticSummary').innerHTML = errors.length
+        ? `<p class="diagnostic">${errors.length} collection issue(s). <a href="#errors">View diagnostics</a></p>` : '';
+    document.querySelectorAll('.section-diagnostic').forEach(element => element.remove());
+    const sections = { System: 'overview', CPU: 'performance', Storage: 'storage', Network: 'network', Security: 'security', Hardware: 'hardware', GPU: 'hardware' };
+    new Set(errors.map(error => sections[error.name.split('.')[0]]).filter(Boolean)).forEach(id => {
+        const note = document.createElement('p');
+        note.className = 'diagnostic section-diagnostic';
+        note.innerHTML = 'Some data could not be collected. <a href="#errors">View diagnostics</a>';
+        document.getElementById(id).appendChild(note);
+    });
+    $('#errorsContent').textContent = errors.length
+        ? errors.map(({ name, message }) => `${name}: ${message}\nCheck the collector output and Windows permissions or feature availability, then collect again.`).join('\n\n')
         : 'No collection errors.';
 }
 
