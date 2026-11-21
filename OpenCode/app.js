@@ -1288,7 +1288,10 @@ function renderMap() {
   // Los grupos se dibujan primero para que un marcador suelto nunca quede
   // tapado por un grupo mayor.
   clusters.sort((a, b) => b.points.length - a.points.length);
-  mapItemData = clusters.concat(singles);
+  mapItemData = clusters.concat(singles).filter((item) => {
+    const { x, y } = item.kind === "cluster" ? item : item.points[0];
+    return x >= 0 && x <= MAP_W && y >= 0 && y <= MAP_H;
+  });
 
   // Si el DJ seleccionado ha quedado fuera de los filtros, se retira.
   if (
@@ -1554,15 +1557,13 @@ mapSearchInput.addEventListener("input", () => {
       mapTX = 0;
       mapTY = 0;
 
-      // La búsqueda también creó su selección: se retira con ella para no dejar
-      // un panel que habla de un DJ sin marcador resaltado. Si el usuario eligió
-      // después otro marcador, esa elección se respeta.
-      if (mapSelected !== null && mapSelected === mapSearchSelected) {
-        mapSelected = null;
-        renderMapPanelDefault();
-      }
-      mapSearchSelected = null;
     }
+    // El zoom manual conserva el encuadre, no la selección automática.
+    if (mapSelected !== null && mapSelected === mapSearchSelected) {
+      mapSelected = null;
+      renderMapPanelDefault();
+    }
+    mapSearchSelected = null;
     renderMap();
     return;
   }
@@ -1722,6 +1723,7 @@ window.addEventListener("resize", scheduleMapRender);
 // Teclado: flechas para recorrer marcadores, Enter/Espacio para abrir la ficha
 // y + / − para el zoom.
 mapSvg.addEventListener("keydown", (event) => {
+  if (event.ctrlKey || event.metaKey) return;
   const item = event.target.closest(".map__marker, .map__cluster");
 
   if (event.key === "ArrowRight" || event.key === "ArrowDown") {

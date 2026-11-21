@@ -154,9 +154,8 @@ Design principles:
 
 - Dark background.
 - Electronic music visual atmosphere.
-- Neon accent colors.
-- Modern cards and panels.
-- Subtle borders and shadows.
+- One spot accent (`--spot`) on a near-black ground.
+- Square cards and panels with hairline rules, without decorative shadows.
 - Clear typography.
 - Consistent spacing.
 - Smooth but restrained transitions.
@@ -208,7 +207,7 @@ Consider the following:
 
 - Semantic HTML elements.
 - Proper labels for form controls.
-- Keyboard navigation.
+- Keyboard navigation: on the map, test arrow-key traversal after zooming and preserve browser shortcuts such as Ctrl/Cmd with `+` or `−`.
 - Visible focus states.
 - Sufficient color contrast.
 - Descriptive button labels.
